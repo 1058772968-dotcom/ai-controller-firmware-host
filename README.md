@@ -14,7 +14,7 @@
 
 这是「智慧呆毛」AI 控制器 E24 板的固件和上位机。手柄用陀螺仪当鼠标指针，有 L、R、V、S 四个键，内置麦克风和提示音扬声器，通过一根 USB 线同时以鼠标、配置通道、串口和麦克风的身份接到电脑上。
 
-本仓库是 **2026-11-16 的进度快照**，不随后续开发同步。里面有固件源码、网页和命令行两套上位机、上板日志与录音证据，以及 4 个编译好的镜像。
+本仓库是 **2026-11-16 的进度快照**，不随后续开发自动同步。当天下午追加过一次同步（[下午同步说明](01-下午同步-20261116.md)）：含音频联调档上板复测、`e24ctl record` 修复、原生 Mac 上位机「灵感圈」MVP。里面有固件源码、网页、命令行和 Mac 三套上位机、上板日志与录音证据，以及 5 个编译好的镜像。
 
 <table>
   <tr>
@@ -70,15 +70,18 @@ flowchart LR
 
 麦克风闭环（电脑扬声器播放、硬件麦克风录音、5 分钟长稳）**只在 micpoc 档测过**。这一档放宽了隐私规格 AUD 02，不按 V 也放行，只能烧台架板。
 
+**11-16 下午追加（实物）**：含音频的默认联调档（[5 号镜像](固件镜像/5-联调档link含音频-已上板20261116/说明.md)）经 `e24ctl dfu` 重烧上板：枚举、参数保留、麦克风自检、**闸门关闭时收流 96000 样本全零**、遥测 96 Hz 实物 PASS；Flash 里 coredump 分区未写过（两次 USB 断开不是固件崩溃）。60 秒窗口内固件没看到任何按键，四键和按住 V 录音仍是 **NOT RUN**。见 [E24 部署调试归档](源码与文档/hardware/validation/ai-engineering/20261116-E24部署调试/任务归档.md)。
+
 ### 上位机
 
 | 工具 | 状态 |
 |---|---|
 | 网页实机上位机 `aikey-host` | 调参、轴向向导、角速度曲线、试手板、9 项逐项测试面板。单元测试 25/25；2026-11-06 在 Chrome 里和实板连通。接管时只移动页面里的圆点，**不控制系统光标** |
 | 灵动岛 POC `island-poc` | 交互演示，与实机上位机共用本机服务和手柄授权。单元测试 12/12 |
-| 命令行 `e24ctl.py` | 调参、校准、轴向向导、遥测、静置漂移、麦克风自检、请求录音、提示音、切下载模式。遥测、麦克风自检、下载模式**实物 PASS** |
+| 命令行 `e24ctl.py` | 调参、校准、轴向向导、遥测、静置漂移、麦克风自检、请求录音、提示音、切下载模式。遥测、麦克风自检、下载模式**实物 PASS**。11-16 修复：同一次开机里第二次 `record` 接管被固件当成旧命令丢掉（现在接着设备记的序号编号，实物连续两次接管通过） |
 | GRIP Capture 旧版 | 只有 Python 3.9 字节码，没有原始源码。单元测试 12/12 |
-| 原生 Mac 上位机 | **没有做**。跨应用常驻和控制系统光标需要它；2026-11-16 只有[接管电脑方案（提案）](源码与文档/docs/engineering/项目档案/20261116-上位机接管电脑方案/上位机接管电脑方案.md)，没有代码 |
+| 原生 Mac 上位机「灵感圈」`aikey-inspire` | 11-16 MVP：光标停住时用辅助功能列出附近可点元素，交给 Jev 预判要点哪个并高亮，`⌃⌥↩` 点它；`⌃⌥C` 圈选截图、写意图、存灵感库、Jev 分类，卡片可拖进 agent。单元测试 8/8；本机实际使用，Jev 预判延迟中位约 0.4 s。控制器 S / V 键、语音意图**未做**，命中率**未统计**。见 [README](源码与文档/prototype/aikey-inspire/README.md) |
+| 上位机接管电脑 | 只有[方案（提案）](源码与文档/docs/engineering/项目档案/20261116-上位机接管电脑方案/上位机接管电脑方案.md)，四块切片、意图包、computer use 兜底都没有代码 |
 
 已知问题、下一步计划和每一项的证据出处，见 [00-先读我.md](00-先读我.md)。
 
@@ -181,7 +184,7 @@ open -a "Google Chrome" "源码与文档/prototype/AI键盘-实机上位机.html
 
 依赖 Homebrew 的 hidapi；遥测相关命令另需 pyserial（`python3 -m pip install pyserial`）。不要加 `-I`，否则找不到用户目录里的 pyserial。
 
-烧哪个镜像：调参、校准、遥测用 `固件镜像/2-联调档link-无音频-已上板G3G4G6` 即可。`audio`、`mic`、`record`、`tone` 要含音频的联调档，只有 `4-联调档link含音频-最新编译-未上板实测`（没有上板记录）或自己从源码编译。
+烧哪个镜像：调参、校准、遥测用 `固件镜像/2-联调档link-无音频-已上板G3G4G6` 即可。`audio`、`mic`、`record`、`tone` 要含音频的联调档，用 `5-联调档link含音频-已上板20261116`（11-16 上板复测过）；`4-联调档link含音频-最新编译-未上板实测` 没有上板记录。
 
 ```bash
 python3 源码与文档/engineering/e24/tools/e24ctl.py info
@@ -217,6 +220,23 @@ cd 源码与文档/engineering/e24 && tools/idf.sh build
 </details>
 
 <details>
+<summary><strong>原生 Mac 上位机「灵感圈」</strong>（要 Xcode / Swift 5.10+，macOS 14+）</summary>
+
+```bash
+cd 源码与文档/prototype/aikey-inspire && ./build.sh test
+```
+
+结尾应为 `Executed 8 tests, with 0 failures`。打包并启动：
+
+```bash
+cd 源码与文档/prototype/aikey-inspire && ./build.sh run
+```
+
+生成 `~/Applications/AI KEY 灵感圈.app`。本机有 Apple Development 证书时自动用它签名（重编后已授权限保留），没有时用临时签名，每次重编都要重新授权。首次启动要授“辅助功能”，圈选截图要“屏幕录制”。没有 TypeSafe API Key 时自动用本地模拟预判；有 Key 时在 App 的“权限与设置”里存进钥匙串。会发给 TypeSafe 的内容：软件名、窗口标题、网址、光标附近元素的文字和位置，不发截图。
+
+</details>
+
+<details>
 <summary><strong>重新构建网页单页</strong>（改了上位机源码之后才需要）</summary>
 
 仓库里的两个 `.html` 单页已经是构建好的。改了 `aikey-host/` 或 `island-poc/` 的源码后，按下面的方法重新生成：
@@ -246,6 +266,7 @@ cd 源码与文档/prototype && npm ci && npm run build:host && npm run build:is
 | `2-联调档link-无音频-已上板G3G4G6` | link（加音频之前） | `a9bd99c38afb0ad7…` | 与上板记录哈希一致，G3 / G4 / G6 实物 PASS |
 | `3-麦克风POC档micpoc-已上板闭环-仅台架` | micpoc | `5cf231f96b0ca646…` | 与音频归档哈希一致，闭环实物 PASS。**不能用于交付** |
 | `4-联调档link含音频-最新编译-未上板实测` | link（含音频） | `4836f2a2347f79d1…` | **没有上板记录**。上板实测过的含音频联调档是 `6fb46d8b46d5fb11…`，与它不一致，那个版本没找到 |
+| `5-联调档link含音频-已上板20261116` | link（含音频） | `8bc6d4810260f83e…` | 11-16 下午从同一份源码重编并烧上板，烧录回读哈希通过；枚举、麦克风自检、闸门关闭全零实物 PASS；四键、录音未测 |
 
 烧录前先装 esptool（`python3 -m pip install esptool`），只接 USB、不接电池，在对应镜像目录里运行：
 
@@ -273,12 +294,15 @@ python3 -m esptool --chip esp32s3 -p /dev/cu.usbmodemXXXX -b 460800 --before def
 | 🔁 | [全链路模拟器](源码与文档/engineering/e24/tests/link_sim/README.md) | 真实固件 C 代码接真实上位机 JS 的模拟场景 |
 | 📄 | [R2 嵌入式开发需求规格书 v1.0](源码与文档/交付/2026-10-29_R2嵌入式开发规格/AI控制器R2_嵌入式开发需求规格书_v1.0.md) | 原始需求（对照 E24 网表有 3 处已过时，见固件框架规划） |
 | 💡 | [上位机接管电脑方案（提案）](源码与文档/docs/engineering/项目档案/20261116-上位机接管电脑方案/上位机接管电脑方案.md) | 屏幕分块、意图识别、computer use 兜底，未写代码 |
+| 🔄 | [下午同步说明](01-下午同步-20261116.md) | 11-16 下午追加的内容、改动的文件和校验 |
+| 🧷 | [E24 部署调试归档](源码与文档/hardware/validation/ai-engineering/20261116-E24部署调试/任务归档.md) | 含音频联调档上板、自检、接管序号问题、USB 断开排查 |
+| 🎯 | [灵感圈 README](源码与文档/prototype/aikey-inspire/README.md)、[MVP 归档](源码与文档/docs/engineering/项目档案/20261116-光标交互灵感圈MVP/任务归档.md) | Jev 点击预判、圈选灵感库；实际使用中发现和修掉的问题 |
 
 `源码与文档/engineering/rev-a/` 是上一代 REV A 工程的固件和电脑端工作台，E24 的控制核心与协议从这里沿用；REV A 从未烧录。
 
 ## 关于这个仓库
 
-- **快照**：内容与 2026-11-16 交付的 ZIP 一致，可以用 [`SHA256SUMS.txt`](SHA256SUMS.txt) 逐文件核对。本 README 和 `docs/assets/` 是之后补的，不在校验清单里。
+- **快照**：[`SHA256SUMS.txt`](SHA256SUMS.txt) 是 2026-11-16 交付 ZIP 的逐文件校验。下午同步改了其中 4 个 E24 文件（`sdkconfig.link`、`e24ctl.py`、`devcfg_shim.c`、`e24ctl_test.py`），它们会和清单对不上；ZIP 原样可从提交 `7b39824` 取回。下午新增和改动的文件另见 [`SHA256SUMS-20261116-下午同步.txt`](SHA256SUMS-20261116-下午同步.txt)。本 README 和 `docs/assets/` 不在任何校验清单里。
 - **许可证**：没有附项目许可证，保留所有权利。第三方组件保留各自的许可证：[Bosch BMI270 SensorAPI](源码与文档/engineering/e24/firmware/components/bmi270_sensorapi/LICENSE)（BSD-3-Clause），[ST 驱动](源码与文档/engineering/rev-a/firmware/vendor/st/LICENSE)（BSD-3-Clause）。
 - **重新生成截图**：见 [docs/assets/README.md](docs/assets/README.md)。
 

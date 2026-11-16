@@ -1,0 +1,19 @@
+Test Case '-[InspireCoreTests.CoreTests testCategoryRequestAndMock]' started.
+Test Case '-[InspireCoreTests.CoreTests testCategoryRequestAndMock]' passed (0.002 seconds).
+Test Case '-[InspireCoreTests.CoreTests testCleanStripsInvisibleFormatChars]' started.
+Test Case '-[InspireCoreTests.CoreTests testCleanStripsInvisibleFormatChars]' passed (0.000 seconds).
+Test Case '-[InspireCoreTests.CoreTests testDirection]' started.
+Test Case '-[InspireCoreTests.CoreTests testDirection]' passed (0.000 seconds).
+Test Case '-[InspireCoreTests.CoreTests testDwellFiresOncePerStop]' started.
+Test Case '-[InspireCoreTests.CoreTests testDwellFiresOncePerStop]' passed (0.001 seconds).
+Test Case '-[InspireCoreTests.CoreTests testLibraryRoundTripAndTrash]' started.
+Test Case '-[InspireCoreTests.CoreTests testLibraryRoundTripAndTrash]' passed (0.004 seconds).
+Test Case '-[InspireCoreTests.CoreTests testMockPrefersUnderPointer]' started.
+Test Case '-[InspireCoreTests.CoreTests testMockPrefersUnderPointer]' passed (0.000 seconds).
+Test Case '-[InspireCoreTests.CoreTests testParseResponse]' started.
+Test Case '-[InspireCoreTests.CoreTests testParseResponse]' passed (0.000 seconds).
+Test Case '-[InspireCoreTests.CoreTests testRequestBodyShape]' started.
+Test Case '-[InspireCoreTests.CoreTests testRequestBodyShape]' passed (0.000 seconds).
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.008 (0.009) seconds
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.008 (0.009) seconds
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.008 (0.011) seconds

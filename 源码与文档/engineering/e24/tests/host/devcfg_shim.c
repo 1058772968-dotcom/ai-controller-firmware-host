@@ -7,6 +7,7 @@
  *   savefail <0|1>            -> OK            （模拟 NVS 写失败）
  *   cfg <32 字节十六进制>     -> R <32 字节十六进制回复帧>（与 link_app.c 一样：成功后 set_cfg）
  *   feed gx gy gz ax ay az n  -> F <dx 累计> <dy 累计> <指向状态> <水平°/s> <竖直°/s> <静止> <零偏x y z>（传感器坐标，200 Hz）
+ *   cmd <32 字节十六进制>     -> C <ak_result>   （报告 2 控制命令，走 ak_decode_command + ak_command）
  *   quit */
 #include "controller.h"
 #include "devcfg.h"
@@ -82,6 +83,11 @@ int main(void)
             ak_devcfg_process(&c, (uint8_t)s_ptr.state, s_tel, s_ctrl.session, in, 32, io, out, &apply, &after);
             if (apply) ak_pointer_set_cfg(&s_ptr, &c);
             hex_out("R", out, 32);
+        } else if (!strncmp(line, "cmd ", 4)) {
+            uint8_t in[32];
+            ak_wire_command c;
+            if (!hex_in(line + 4, in, 32) || !ak_decode_command(in, 32, &c)) { printf("ERR cmd frame\n"); continue; }
+            printf("C %d\n", (int)ak_command(&s_ctrl, c.session, c.sequence, c.command, c.value, s_now));
         } else if (!strncmp(line, "feed ", 5)) {
             float g[3], a[3];
             int n;

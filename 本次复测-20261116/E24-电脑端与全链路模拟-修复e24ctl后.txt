@@ -1,0 +1,20 @@
+PASS  board.json 生成文件一致
+PASS  board.json 与 EDA 网表一致
+PASS  分区表
+PASS  音频 FIR 系数一致
+PASS  反例：网表改名应失败
+PASS  编译 protocol_test
+PASS  运行 protocol_test
+PASS  编译 controller_test
+PASS  运行 controller_test
+PASS  编译 pointer_test
+PASS  运行 pointer_test
+PASS  编译 audio_test
+PASS  运行 audio_test
+PASS  编译 devcfg_test
+PASS  运行 devcfg_test
+PASS  编译 devcfg_shim
+PASS  运行 e24ctl_test（调参工具 × 固件 C 代码）
+PASS  e24ctl list（hidapi 可加载）
+PASS  全链路模拟（固件 × 上位机）
+19/19 通过

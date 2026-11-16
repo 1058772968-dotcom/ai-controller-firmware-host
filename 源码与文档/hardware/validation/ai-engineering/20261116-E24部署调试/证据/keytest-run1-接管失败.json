@@ -1,0 +1,26 @@
+{
+ "seconds": 60.0,
+ "state_reports": 600,
+ "report_rate_hz": 10.0,
+ "events": [
+  {
+   "t": 0.1,
+   "kind": "owner",
+   "owner": "普通鼠标（POINTER）"
+  },
+  {
+   "t": 60.0209,
+   "kind": "release_sent"
+  }
+ ],
+ "wav": {
+  "samples": 976000,
+  "rate": 16000,
+  "nonzero": 0,
+  "nonzero_segments_s": [],
+  "ffmpeg_started_before_t0_s": 0.083
+ },
+ "gate_segments_s": [],
+ "v_down_to_gate_open_ms": [],
+ "v_up_to_gate_closed_ms": []
+}

@@ -37,8 +37,15 @@ class ShimTransport:
     def __init__(self, shim):
         self.s = shim
         self.q = []
+        self.cmd_results = []
 
     def write(self, data):
+        if data[0] == T.REPORT_STATE:          # 控制命令：交给固件 ak_command，记下结果码
+            assert len(data) == 33
+            r = self.s.cmd("cmd " + data[1:].hex())
+            assert r.startswith("C "), r
+            self.cmd_results.append((data[2], int(r[2:])))
+            return
         assert data[0] == T.REPORT_CFG and len(data) == 33
         r = self.s.cmd("cfg " + data[1:].hex())
         assert r.startswith("R "), r
@@ -447,6 +454,25 @@ def test_command_frame():
 def test_tone_payload():
     b = T.encode_tone(1000, 200, 40)
     assert len(b) == 16 and b[:4] == b"SPK!" and b[4:9] == bytes([0xE8, 3, 0xC8, 0, 40]) and not any(b[9:])
+
+
+def test_record_twice_same_session():
+    """2026-11-16 上板发现：同一 session 里第二次 record 从序号 1 开始，HELLO/CLAIM 被判 STALE，接管静默失败。"""
+    sh, dev = new_dev()
+    real_time = T.time
+    try:
+        T.time = FakeClock()
+        for run in range(2):
+            dev.tr.cmd_results.clear()
+            T.run_record(dev, 0.05, on_tick=lambda m: None)
+            res = dev.tr.cmd_results
+            assert res and res[0][0] == T.CMD_HELLO and res[1][0] == T.CMD_CLAIM, (run, res)
+            assert all(code == 0 for _, code in res), f"第 {run + 1} 次 record 有命令被拒：{res}"
+            assert res[-1][0] == T.CMD_RELEASE, (run, res)
+        assert dev.wait_state()["cmd_seq"] > 0
+    finally:
+        T.time = real_time
+        sh.close()
 
 
 def test_cdc_baud_guard():

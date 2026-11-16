@@ -1,0 +1,33 @@
+Not using an unsupported version of tool cmake found in PATH: 4.1.2. To use it, run '/Applications/Xcode.app/Contents/Developer/usr/bin/python3 /Users/linxiansheng/esp-idf/tools/idf_tools.py export --prefer-system'
+Not using an unsupported version of tool openocd-esp32 found in PATH: 0.12.0. To use it, run '/Applications/Xcode.app/Contents/Developer/usr/bin/python3 /Users/linxiansheng/esp-idf/tools/idf_tools.py export --prefer-system'
+Not using an unsupported version of tool ninja found in PATH: 1.13.2. To use it, run '/Applications/Xcode.app/Contents/Developer/usr/bin/python3 /Users/linxiansheng/esp-idf/tools/idf_tools.py export --prefer-system'
+OK 17 个引脚，生成文件与 board.json 一致
+Executing action: all (aliases: build)
+Running ninja in directory /Users/linxiansheng/.cache/ai-key-e24/build-link
+Executing "ninja all"...
+NOTICE: 
+Following dependencies have new versions available:
+Dependency "espressif/tinyusb": "0.21.0~2" -> "0.21.0~6"
+Consider running "idf.py update-dependencies" to update your lock file.
+NOTICE: Processing 3 dependencies:
+NOTICE: [1/3] espressif/esp_tinyusb (1.7.6)
+NOTICE: [2/3] espressif/tinyusb (0.21.0~2)
+NOTICE: [3/3] idf (5.2.3)
+Loading defaults file /Users/linxiansheng/Library/Mobile Documents/com~apple~CloudDocs/键盘/engineering/e24/firmware/sdkconfig.defaults...
+Loading defaults file /Users/linxiansheng/Library/Mobile Documents/com~apple~CloudDocs/键盘/engineering/e24/firmware/sdkconfig.link.defaults...
+Bootloader binary size 0x53c0 bytes. 0x2c40 bytes (35%) free.
+esptool.py v4.12.0
+Creating esp32s3 image...
+Merged 2 ELF sections
+Successfully created esp32s3 image.
+Generated /Users/linxiansheng/.cache/ai-key-e24/build-link/aikey_e24.bin
+aikey_e24.bin binary size 0x5f0b0 bytes. Smallest app partition is 0x300000 bytes. 0x2a0f50 bytes (88%) free.
+
+Project build complete. To flash, run:
+ idf.py flash
+or
+ idf.py -p PORT flash
+or
+ python -m esptool --chip esp32s3 -b 460800 --before default_reset --after hard_reset write_flash --flash_mode dio --flash_size 8MB --flash_freq 80m 0x0 ../../../../../../.cache/ai-key-e24/build-link/bootloader/bootloader.bin 0x8000 ../../../../../../.cache/ai-key-e24/build-link/partition_table/partition-table.bin 0xf000 ../../../../../../.cache/ai-key-e24/build-link/ota_data_initial.bin 0x20000 ../../../../../../.cache/ai-key-e24/build-link/aikey_e24.bin
+or from the "/Users/linxiansheng/.cache/ai-key-e24/build-link" directory
+ python -m esptool --chip esp32s3 -b 460800 --before default_reset --after hard_reset write_flash "@flash_args"

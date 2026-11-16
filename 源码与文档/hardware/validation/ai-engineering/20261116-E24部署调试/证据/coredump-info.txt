@@ -1,0 +1,5 @@
+OK 17 个引脚，生成文件与 board.json 一致
+WARNING: The core dump image offset is not specified. Use partition offset: 0x620000.
+ERROR: Incorrect size of core dump image: 4294967295, use partition size instead: 65536
+ERROR: Failed to load core dump: Core dump version "0xffff" is not supported!
+Executing action: coredump-info

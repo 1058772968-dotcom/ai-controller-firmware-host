@@ -91,7 +91,7 @@ def parse_state(b: bytes) -> Optional[dict]:
     flags = b[16]
     return {"type": b[1], "owner": b[2], "buttons": b[3], "session": int.from_bytes(b[4:8], "little"),
             "flags": flags, "host_connected": bool(flags & 1), "calibrated": bool(flags & 32),
-            "hid_buttons": b[18], "faults": b[19]}
+            "hid_buttons": b[18], "faults": b[19], "cmd_seq": int.from_bytes(b[24:28], "little")}
 
 
 def parse_reply(b: bytes) -> dict:
@@ -668,7 +668,9 @@ def run_record(dev: E24, seconds: float, on_tick: Callable[[str], None] = print)
     """接管指针，按住 V 时请求录音，到时交还。录音文件由调用方另外开 ffmpeg 采。
     只有实体 V 键按住才可能开闸，这里绕不过去。"""
     st = dev.wait_state()
-    session, seq = st["session"], 1
+    # 固件只收比上一条更新的序号（controller.c newer()），交还后 session 不一定换；
+    # 从 1 重新编号时第二次 record 的 HELLO/CLAIM 会被当成旧命令丢掉，闸门永远打不开
+    session, seq = st["session"], (st["cmd_seq"] + 1) & 0xFFFFFFFF
 
     def send(cmd: int, value: int = 0) -> None:
         nonlocal seq
