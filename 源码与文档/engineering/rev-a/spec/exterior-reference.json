@@ -1,0 +1,32 @@
+{
+  "authority": "User supplied image and instruction: 绘制的外形太丑了，按照原型图来1:1绘制",
+  "reference_image": "/Users/linxiansheng/Library/Mobile Documents/com~apple~CloudDocs/键盘/engineering/rev-a/mechanical/id01-reference/user-reference.png",
+  "sha256": "97d5b01755bf8b65d162aa572840c70510ab536295d32cb31e01278db791a385",
+  "supersedes": "ID-06 C exterior layout only; ESP32-S3 electronics and firmware remain the functional baseline",
+  "required_visible_features": [
+    "rearward-curved grip",
+    "sloping egg-shaped cap",
+    "near L and far R thumb caps",
+    "hanging recessed index trigger",
+    "left-side gold-trim drawing key",
+    "dark palm grip",
+    "removable fabric hand strap and circular anchors",
+    "cyan front cap slit",
+    "bottom USB-C and lanyard apertures"
+  ],
+  "dimension_interpretation": {
+    "height_mm": 116,
+    "cap_width_mm": 52,
+    "cap_depth_mm": 58,
+    "overall_swept_grip_depth": "measure and report separately; reference side-view depth arrow spans the cap",
+    "reference_depth_annotation_mm": 46,
+    "priority": "Image visual proportions; actual native dimensions reported separately"
+  },
+  "status": "NATIVE_EXTERIOR_RECONSTRUCTION_AND_VISUAL_REVIEW_IN_PROGRESS",
+  "limits": [
+    "Concept views contain perspective; no source CAD was provided",
+    "Internal fit and mechanisms must be revalidated after this exterior change",
+    "Previous mechanical validation cannot be applied to the changed shell"
+  ],
+  "user_dimension_priority": "Explicit reply: 优先按原图视觉比例还原，实际尺寸另列（推荐）"
+}

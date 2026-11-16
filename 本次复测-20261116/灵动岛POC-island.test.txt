@@ -1,0 +1,82 @@
+TAP version 13
+# Subtest: S 短按呼出灵动岛，长按圈画
+ok 1 - S 短按呼出灵动岛，长按圈画
+  ---
+  duration_ms: 0.640708
+  type: 'test'
+  ...
+# Subtest: S 长按松开不补发短按
+ok 2 - S 长按松开不补发短按
+  ---
+  duration_ms: 0.106542
+  type: 'test'
+  ...
+# Subtest: V 按下锁定，保持说话，松开结束；双击居中
+ok 3 - V 按下锁定，保持说话，松开结束；双击居中
+  ---
+  duration_ms: 0.095541
+  type: 'test'
+  ...
+# Subtest: 录音与圈画互斥
+ok 4 - 录音与圈画互斥
+  ---
+  duration_ms: 0.094291
+  type: 'test'
+  ...
+# Subtest: 复位结束在途动作
+ok 5 - 复位结束在途动作
+  ---
+  duration_ms: 0.088166
+  type: 'test'
+  ...
+# Subtest: CRC16 与固件一致（CCITT-FALSE 标准校验值）
+ok 6 - CRC16 与固件一致（CCITT-FALSE 标准校验值）
+  ---
+  duration_ms: 0.086041
+  type: 'test'
+  ...
+# Subtest: 命令编码：版本、保留字节为零、CRC 低字节在前
+ok 7 - 命令编码：版本、保留字节为零、CRC 低字节在前
+  ---
+  duration_ms: 0.160541
+  type: 'test'
+  ...
+# Subtest: 状态解码：运动有符号、CRC 错误丢弃
+ok 8 - 状态解码：运动有符号、CRC 错误丢弃
+  ---
+  duration_ms: 0.105083
+  type: 'test'
+  ...
+# Subtest: HID 握手：新会话发 HELLO，ACK 后 CLAIM，HOST 后才转发按键
+ok 9 - HID 握手：新会话发 HELLO，ACK 后 CLAIM，HOST 后才转发按键
+  ---
+  duration_ms: 0.531625
+  type: 'test'
+  ...
+# Subtest: E24 固件档：faults bit1/bit2 → 音频、触觉暂不可用，不再发送 RECORD / FEEDBACK
+ok 10 - E24 固件档：faults bit1/bit2 → 音频、触觉暂不可用，不再发送 RECORD / FEEDBACK
+  ---
+  duration_ms: 0.309042
+  type: 'test'
+  ...
+# Subtest: 页面失焦发 RELEASE 并停止转发；回到页面重新 HELLO → CLAIM
+ok 11 - 页面失焦发 RELEASE 并停止转发；回到页面重新 HELLO → CLAIM
+  ---
+  duration_ms: 0.348916
+  type: 'test'
+  ...
+# Subtest: 触觉单个脉冲不超过 80ms
+ok 12 - 触觉单个脉冲不超过 80ms
+  ---
+  duration_ms: 0.054375
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 40.152083

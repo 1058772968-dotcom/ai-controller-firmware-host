@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>上位机方案总览</title>
+<style>
+:root{
+  --bg:#f6f5f2; --surface:#ffffff; --surface2:#f0eee9; --ink:#1d1c1a; --muted:#6b675f; --line:#dedad2;
+  --real:#1f7a46; --real-bg:#dcf1e3;
+  --partial:#2f8f6b; --partial-bg:#e4f4ee;
+  --sample:#4f8a2f; --sample-bg:#eef6e4;
+  --proposal:#6a4bc4; --proposal-bg:#ece6fb;
+  --todo:#b56a12; --todo-bg:#fdf0dc;
+  --z1:#3b6fc4; --z2:#c4573b; --z3:#2f8f6b; --z4:#a0782a;
+  --accent:#6a4bc4;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16161a; --surface:#1f1f24; --surface2:#26262c; --ink:#ecebe8; --muted:#a19d95; --line:#34343b;
+    --real:#5fd18f; --real-bg:#1b3526;
+    --partial:#6fd3ad; --partial-bg:#1a332b;
+    --sample:#a6d67e; --sample-bg:#26321c;
+    --proposal:#b8a2ff; --proposal-bg:#2b2444;
+    --todo:#f2b35e; --todo-bg:#3a2c18;
+    --z1:#7aa5ee; --z2:#ee8f78; --z3:#6fd3ad; --z4:#dcb466;
+    --accent:#b8a2ff;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16161a; --surface:#1f1f24; --surface2:#26262c; --ink:#ecebe8; --muted:#a19d95; --line:#34343b;
+  --real:#5fd18f; --real-bg:#1b3526; --partial:#6fd3ad; --partial-bg:#1a332b;
+  --sample:#a6d67e; --sample-bg:#26321c; --proposal:#b8a2ff; --proposal-bg:#2b2444;
+  --todo:#f2b35e; --todo-bg:#3a2c18; --z1:#7aa5ee; --z2:#ee8f78; --z3:#6fd3ad; --z4:#dcb466; --accent:#b8a2ff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+.wrap{max-width:1120px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:28px;line-height:1.25;margin:0 0 6px;letter-spacing:.01em}
+h2{font-size:20px;margin:44px 0 6px}
+h3{font-size:16px;margin:0 0 6px}
+p{margin:0 0 10px}
+.sub{color:var(--muted);margin-bottom:18px}
+.muted{color:var(--muted)}
+a{color:var(--accent)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0 8px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi b{display:block;font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi span{color:var(--muted);font-size:13px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;line-height:1;padding:5px 8px;border-radius:999px;white-space:nowrap;border:1px solid transparent}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.s-real{color:var(--real);background:var(--real-bg)}
+.s-partial{color:var(--partial);background:var(--partial-bg)}
+.s-sample{color:var(--sample);background:var(--sample-bg)}
+.s-proposal{color:var(--proposal);background:var(--proposal-bg)}
+.s-todo{color:var(--todo);background:var(--todo-bg);border-style:dashed;border-color:currentColor}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px;position:relative}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:left;cursor:pointer;color:inherit;font:inherit;position:relative;transition:border-color .15s,transform .15s}
+.step:hover{transform:translateY(-1px)}
+.step[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 25%,transparent)}
+.step .no{font-size:12px;color:var(--muted);letter-spacing:.06em}
+.step h3{margin:4px 0 4px;font-size:17px}
+.step .goal{font-size:13px;color:var(--muted);min-height:42px}
+.step .bar{height:6px;border-radius:3px;background:var(--surface2);overflow:hidden;display:flex;margin:10px 0 8px}
+.step .bar i{display:block;height:100%}
+.step .what{font-size:13px;margin:8px 0 0;padding-left:16px}
+.step .what li{margin:2px 0}
+.here{position:absolute;top:-11px;right:12px;font-size:11px;background:var(--accent);color:var(--surface);padding:2px 8px;border-radius:999px}
+.arrow{position:absolute;top:50%;right:-11px;width:10px;height:10px;border-top:2px solid var(--line);border-right:2px solid var(--line);transform:translateY(-50%) rotate(45deg);z-index:1}
+.step:last-child .arrow{display:none}
+
+/* proposal */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:14px}
+.note{background:var(--proposal-bg);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:14px;margin-top:12px}
+.note b{color:var(--proposal)}
+.split{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;align-items:start}
+.screen{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface2);aspect-ratio:16/10;display:grid;grid-template-rows:auto auto 1fr auto;font-size:12px;user-select:none}
+.zone{border:2px solid transparent;cursor:pointer;position:relative;display:flex;align-items:center;gap:8px;padding:6px 10px;transition:background .15s,border-color .15s}
+.zone .tag{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;color:#fff;font-weight:700;font-size:12px;flex:none}
+.zone .lbl{font-weight:600}
+.zone .hint{color:var(--muted)}
+.z1 .tag{background:var(--z1)} .z2 .tag{background:var(--z2)} .z3 .tag{background:var(--z3)} .z4 .tag{background:var(--z4)}
+.z1{background:color-mix(in srgb,var(--z1) 12%,transparent)}
+.z2{background:color-mix(in srgb,var(--z2) 12%,transparent)}
+.z3{background:color-mix(in srgb,var(--z3) 10%,transparent)}
+.z4{background:color-mix(in srgb,var(--z4) 14%,transparent)}
+.zone.on.z1{border-color:var(--z1)} .zone.on.z2{border-color:var(--z2)} .zone.on.z3{border-color:var(--z3)} .zone.on.z4{border-color:var(--z4)}
+.menubar{font-size:11px;padding:3px 10px;color:var(--muted);background:color-mix(in srgb,var(--z2) 7%,transparent);display:flex;gap:14px}
+.body{display:grid;grid-template-columns:30% 1fr;min-height:0}
+.body .zone{align-items:flex-start;flex-direction:column;justify-content:center}
+.fake{display:block;height:6px;border-radius:3px;background:color-mix(in srgb,var(--ink) 10%,transparent);margin:3px 0}
+.dock{justify-content:center;padding:6px}
+.dock .apps{display:flex;gap:6px;margin-left:8px}
+.dock .apps i{width:18px;height:18px;border-radius:5px;background:color-mix(in srgb,var(--z1) 45%,var(--surface));display:block}
+.zinfo h3{display:flex;align-items:center;gap:8px}
+.zinfo .tag{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;color:#fff;font-size:12px}
+.kv{display:grid;grid-template-columns:76px 1fr;gap:6px 10px;font-size:14px;margin-top:10px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0}
+.say{display:flex;flex-wrap:wrap;gap:6px}
+.say span{background:var(--surface2);border-radius:8px;padding:2px 8px;font-size:13px}
+
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:16px;counter-reset:f}
+.fbox{background:var(--surface2);border-radius:12px;padding:10px 10px 12px;position:relative;font-size:13px}
+.fbox b{display:block;font-size:14px;margin-bottom:4px}
+.fbox b::before{counter-increment:f;content:counter(f);display:inline-flex;width:18px;height:18px;border-radius:50%;background:var(--proposal);color:var(--surface);font-size:11px;align-items:center;justify-content:center;margin-right:6px;vertical-align:1px}
+.fbox.jev{background:var(--proposal-bg);outline:1.5px solid var(--proposal)}
+.fbox .fork{margin-top:6px;display:grid;gap:4px}
+.fbox .fork span{background:var(--surface);border-radius:6px;padding:2px 6px;font-size:12px}
+
+/* features */
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.toolbar button{font:inherit;font-size:13px;padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.toolbar button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.groups{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+.group{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.group header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
+.group header .step-of{font-size:12px;color:var(--muted)}
+.group .gnote{font-size:13px;color:var(--muted);margin-bottom:6px}
+.group ol{margin:0;padding:0;list-style:none}
+.group li{display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:start;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.group li:first-child{border-top:0}
+.group li .n{color:var(--muted);font-variant-numeric:tabular-nums;font-size:12px;padding-top:2px}
+.group li small{display:block;color:var(--muted);font-size:12px}
+.evidence{margin-top:8px;background:var(--real-bg);border-radius:10px;padding:8px 10px;font-size:13px}
+.evidence b{color:var(--real)}
+.hidden{display:none!important}
+
+.qs{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+.q{background:var(--surface);border:1px dashed var(--todo);border-radius:14px;padding:14px 16px}
+.q h3{font-size:15px}
+.q p{font-size:14px;color:var(--muted);margin:0}
+footer{margin-top:40px;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+footer ul{padding-left:18px;margin:6px 0}
+
+@media (max-width:900px){
+  .steps{grid-template-columns:repeat(2,1fr)}
+  .arrow{display:none}
+  .split{grid-template-columns:1fr}
+  .flow{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:600px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .steps,.groups,.qs{grid-template-columns:1fr}
+  .flow{grid-template-columns:1fr 1fr}
+  .screen{aspect-ratio:auto;grid-template-rows:auto auto 220px auto}
+  .zone .hint{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>智慧呆毛 · 上位机方案总览</h1>
+<p class="sub">2026-11-16 · 汇总仓库里已有的上位机，加上「Jev + computer use 接管电脑」新提案。状态按项目文档和测试记录标注，不把样例当成实物结论。</p>
+
+<div class="kpis">
+  <div class="kpi"><b>4</b><span>个步骤：原型 → 联调 → 接管 → 接入</span></div>
+  <div class="kpi"><b id="k-total">37</b><span>个功能点（含新提案和待接入）</span></div>
+  <div class="kpi"><b id="k-done">27</b><span>个已做出来（①② 两步）</span></div>
+  <div class="kpi"><b id="k-real">3</b><span>个在 E24 实物上测过（含部分通过）</span></div>
+</div>
+<div class="legend">
+  <span class="chip s-real">实物已通</span>
+  <span class="chip s-partial">部分实物</span>
+  <span class="chip s-sample">样例跑通（网页 / 假设备）</span>
+  <span class="chip s-proposal">新提案 · 未拍板</span>
+  <span class="chip s-todo">未开始 / 待拍板</span>
+</div>
+
+<!-- ============ 步骤 ============ -->
+<h2>一、分四步走</h2>
+<p class="muted">点任意一步，下方功能清单只显示这一步。进度条按该步功能点的状态比例画。</p>
+<div class="steps" id="steps"></div>
+
+<!-- ============ 新提案 ============ -->
+<h2>二、第 ③ 步新提案：把屏幕切成四块，按软件识别意图</h2>
+<p class="muted">你原话明确了两部分：底部 Dock 栏、上方的软件 / 浏览器页面与子页面。下面按「从粗到细」切成四块——这是我的理解，见文末待拍板第 1 条。点屏幕上的色块看每块管什么。</p>
+
+<div class="panel">
+  <div class="split">
+    <div class="screen" role="group" aria-label="屏幕四分区示意">
+      <div class="menubar"><span>Chrome</span><span>文件</span><span>编辑</span><span>显示</span><span>标签页</span></div>
+      <div class="zone z2" data-z="2"><span class="tag">2</span><span class="lbl">应用框架</span><span class="hint">菜单栏 · 窗口 · 标签页 · 工具栏</span></div>
+      <div class="body">
+        <div class="zone z4" data-z="4"><span class="tag">4</span><span class="lbl">子页面 / 局部</span><span class="hint">侧栏 · 弹窗 · 表单</span><i class="fake" style="width:80%"></i><i class="fake" style="width:60%"></i><i class="fake" style="width:70%"></i></div>
+        <div class="zone z3 on" data-z="3"><span class="tag">3</span><span class="lbl">主内容</span><span class="hint">网页正文 · 文档 · 代码</span><i class="fake" style="width:90%"></i><i class="fake" style="width:75%"></i><i class="fake" style="width:85%"></i><i class="fake" style="width:50%"></i></div>
+      </div>
+      <div class="zone z1 dock" data-z="1"><span class="tag">1</span><span class="lbl">Dock 栏</span><span class="apps"><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+    </div>
+    <div class="zinfo" id="zinfo" aria-live="polite"></div>
+  </div>
+
+  <h3 style="margin-top:22px">一次操作怎么走（6 步）</h3>
+  <div class="flow">
+    <div class="fbox"><b>说 / 打字</b>按住 V 说话；或在灵动岛里打字。两种入口进同一条管道。</div>
+    <div class="fbox"><b>锁定现场</b>按下 V 那一刻记下：光标在哪块、前台是哪个软件、截图、辅助功能（AX）控件树。</div>
+    <div class="fbox jev"><b>Jev 判定</b>只做选择题：哪块、什么意图、目标在截图哪个框、动作能否撤回。回答带概率。</div>
+    <div class="fbox"><b>分流执行</b><div class="fork"><span>有把握的已知动作 → 本机直接做（快捷键 / AX / 打开应用）</span><span>没把握或多步任务 → Claude computer use</span></div></div>
+    <div class="fbox"><b>预览确认</b>灵动岛显示「我要做什么」。L 确认，R 取消；不可撤回的动作必须确认。</div>
+    <div class="fbox"><b>执行回执</b>做完再截图核对，确认成功才亮灯、振动。</div>
+  </div>
+
+  <div class="note"><b>Jev 放在哪：</b>Jev 不是编程语言，是 TypeSafe 的判定模型。它读文字和截图，只回四种答案：选一项（Choice）、是否成立的概率（Noul）、打分（Score）、截图上的框（Box）。它不写回复、不写代码、不做多步规划。所以它当「意图路由器」：快速判断要做什么、点哪里；真正多步的操作交给 computer use。沿用已拍板的规则：两道确认、圈画和说话互斥、R 随时退出。</div>
+</div>
+
+<!-- ============ 功能点 ============ -->
+<h2>三、目前为止的功能点</h2>
+<div class="toolbar" id="filters">
+  <button data-f="all" aria-pressed="true">全部</button>
+  <button data-f="1" aria-pressed="false">① 交互原型</button>
+  <button data-f="2" aria-pressed="false">② 设备联调</button>
+  <button data-f="3" aria-pressed="false">③ 电脑接管</button>
+  <button data-f="4" aria-pressed="false">④ 接入 Agent</button>
+</div>
+<div class="groups" id="groups"></div>
+
+<!-- ============ 待拍板 ============ -->
+<h2>四、开工前要你拍板的 4 件事</h2>
+<div class="qs">
+  <div class="q"><h3>1. 「四块」怎么切</h3><p>本页按层级切：Dock / 应用框架 / 主内容 / 子页面。如果你指的是屏幕几何上的四个象限（左上、右上、左下、右下），意图表要重排。</p></div>
+  <div class="q"><h3>2. 执行器用哪种</h3><p>建议首版「本机确定性动作优先、Claude computer use 兜底」：常见动作快且稳，开放任务才走截图点击。也可以全部交给 computer use，简单但更慢。</p></div>
+  <div class="q"><h3>3. 首发接哪几个软件</h3><p>每接一个软件就要写一份意图表。建议先接 4 个：Chrome、访达、钉钉、代码编辑器。</p></div>
+  <div class="q"><h3>4. 截图能不能上云</h3><p>Jev 和 Claude 都是云端接口，判定要把截图发出去。可以全量发，也可以只发光标所在那一块，或先在本机遮掉敏感区域。</p></div>
+</div>
+
+<footer>
+  <b>出处</b>（相对本文件路径）
+  <ul>
+    <li>V0.3 鼠标语音原型：<a href="../../prototype/mouse-voice/README.md">prototype/mouse-voice/README.md</a></li>
+    <li>灵动岛 POC：<a href="../../prototype/island-poc/README.md">prototype/island-poc/README.md</a></li>
+    <li>实机上位机网页：<a href="../../prototype/aikey-host/README.md">prototype/aikey-host/README.md</a>；测试数 25/25 取自 <a href="../engineering/项目档案/20261112-智慧呆毛整项目交接/任务归档.md">11-12 整项目交接</a></li>
+    <li>e24ctl 命令行与实物结果：<a href="../../engineering/e24/tools/e24ctl.py">engineering/e24/tools/e24ctl.py</a>、<a href="../engineering/项目档案/20261106-音频固件/任务归档.md">音频固件任务归档</a></li>
+    <li>GRIP Capture 恢复版：<a href="../../上位机恢复_GRIP_Capture/README.md">上位机恢复_GRIP_Capture/README.md</a></li>
+    <li>分层架构与已拍板边界：<a href="../软硬件交互图-2026-09-16/README.md">docs/软硬件交互图-2026-09-16/README.md</a></li>
+    <li>Jev 能力：TypeSafe 文档 docs.typesafe.ai/concepts/system-one（2026-11-16 读取）</li>
+  </ul>
+  第 ③④ 步是提案和待接入项，尚未写代码。网页上位机还没接过实物；E24 的实物结果来自命令行工具和系统录音。
+</footer>
+</div>
+
+<script>
+const STEPS = [
+  {id:1, status:"sample", name:"交互原型", goal:"在网页沙盒里定下按键语法和操作流程", what:["V0.3 鼠标 + 语音原型","灵动岛 POC（三模式五场景）"]},
+  {id:2, status:"partial", name:"设备联调", goal:"让手柄和电脑互通：状态、手感、遥测、麦克风", what:["实机上位机网页","e24ctl 命令行","GRIP 截图上位机（恢复件）"], here:true},
+  {id:3, status:"proposal", name:"电脑接管", goal:"原生 Mac 助手：四分区 + Jev 判意图 + computer use 执行", what:["屏幕四分区","按软件识别意图","语音 + 文字双入口"]},
+  {id:4, status:"todo", name:"接入 Agent", goal:"把请求交给编辑器插件和 AI 编程工具，拿回执", what:["编辑器插件","Claude Code 等 Agent","完成反馈"]},
+];
+
+const GROUPS = [
+  {step:1, title:"V0.3 鼠标 + 语音原型", status:"sample", note:"网页样例，未接蓝牙、麦克风和 AI。", items:[
+    ["默认是普通鼠标","L 左键、R 右键，没有隐藏指令","sample"],
+    ["S 短按 · 六格圆盘","滚动、翻页、缩放、平移、标注、AI 操作","sample"],
+    ["S 长按 · 圈选","连续编号、四角可调、可画关系箭头","sample"],
+    ["V 扳机 · 指着说","按下锁定目标，按住说话，松开先核对文字","sample"],
+    ["V 双击 · 回中","光标回屏幕中心，重设中立姿态","sample"],
+    ["倾斜滚动","±2° 停止区；按住 L 降到 18% 精调","sample"],
+    ["拨动翻页","按住、拨、松开只翻一次；PDF / 设计稿 / 浏览器各翻各的","sample"],
+    ["两道确认 + 撤销","先确认发送，再确认应用；应用后可撤销","sample"],
+    ["安全退出","R、失焦或断连：停动作、松按键、回普通鼠标","sample"],
+  ]},
+  {step:1, title:"灵动岛 POC", status:"sample", note:"网页样例，12/12 测试；WebHID 通道与固件协议交叉验证过，没接过样机。AI 结果是本地示例。", items:[
+    ["呆毛住在刘海里","S 短按展开流转卡片，倾斜挑选，L 进入，R 收起","sample"],
+    ["三模式五场景","CAD 改模、网页微调、整理桌面、空间诊断、语音办公","sample"],
+    ["三种输入","键鼠模拟 / AI KEY 实物（WebHID v1 协议）/ 浏览器语音识别","sample"],
+    ["触觉语法","每次脉冲不超过 80 ms；录音和圈画时禁振","sample"],
+    ["失焦交还光标","切走页面主动 RELEASE，回来重新接管","sample"],
+  ]},
+  {step:2, title:"实机上位机（网页）", status:"sample", note:"假设备 25/25 测试，与固件同一份 C 代码对测；还没接过实物。", items:[
+    ["设备状态","Session、归属、校准、故障、四键","sample"],
+    ["指向手感调参","灵敏度、死区、平滑实时调；存进手柄、重读、恢复默认","sample"],
+    ["重新校准 + 轴向向导","平放定 +Z，竖起定 +Y，写入后转动核对","sample"],
+    ["角速度曲线 + 试手板","Web Serial 读遥测；接管后用位移驱动圆点","sample"],
+    ["9 项逐项测试","连接、校准、遥测、四键、麦克风电平、响声、闸门无声、真实录音、提示音","sample"],
+    ["默认不抢光标","点「接管指针」才接管，切走页面自动交还","sample"],
+    ["虚拟手柄","没有实物时走流程；数据是模拟的，不算验证","sample"],
+    ["进下载模式","点两次确认","sample"],
+  ]},
+  {step:2, title:"e24ctl 命令行", status:"partial", note:"Python 工具，部分命令已在 E24 实物板上用过。", items:[
+    ["参数与校准","info / get / set / save / defaults / cal / tune / wizard / still","sample","代码对测，未逐项实测"],
+    ["遥测","tel / watch，可存 CSV","real","实物：96–97 Hz，坏行 0"],
+    ["音频","audio / mic 电平自检 / record 按住 V 才录 / tone 提示音","partial","实物：麦克风收音、闸门关时全零通过；默认档按 V 开闸录音、提示音出声未测"],
+    ["一键进下载模式","dfu，约 1 秒切到下载口","real","实物通过，重烧成功"],
+  ], evidence:"E24 实物已通：USB 同时出现 HID + CDC + UAC 三个接口；macOS 认出硬件麦克风（16 kHz 单声道）；POC 档 5 分钟长稳，溢出 0。"},
+  {step:2, title:"GRIP Capture 恢复版", status:"sample", note:"只有 Python 3.9 字节码，没有源码；12/12 单测通过，仅供恢复参考。", items:[
+    ["旧版 Mac 截图上位机","截图、运动、叠加层、圈选、串口传输几个模块","sample"],
+  ]},
+  {step:3, title:"电脑接管层（新提案）", status:"proposal", note:"尚未写代码。网页做不到跨应用常驻、移动系统光标，这一步需要原生 Mac 程序。", items:[
+    ["原生 Mac 助手常驻","移动系统光标、全局截图、读取 AX 控件树","proposal"],
+    ["屏幕四分区","Dock / 应用框架 / 主内容 / 子页面","proposal"],
+    ["按前台软件换意图表","Chrome、访达、钉钉、编辑器各有一份","proposal"],
+    ["语音 + 文字双入口","V 说话或打字，进同一条管道","proposal"],
+    ["Jev 判定","分区、意图、目标框、能否撤回，都带概率","proposal"],
+    ["执行分流","有把握的本机直接做；多步任务交给 computer use","proposal"],
+    ["沿用安全规则","两道确认、圈画和说话互斥、R 随时退出","proposal"],
+  ]},
+  {step:4, title:"接入 Agent", status:"todo", note:"目前没有接通任何真实 Agent。", items:[
+    ["编辑器插件","补真实上下文，返回执行回执","todo"],
+    ["接 AI 编程工具","首发 macOS + Claude Code 仍待拍板","todo"],
+    ["完成反馈","应用成功后亮绿灯 + 振动，待拍板","todo"],
+  ]},
+];
+
+const ZONES = {
+  1:{name:"Dock 栏", job:"开哪个软件", say:["打开钉钉","切到 Chrome","把微信退了"],
+     jev:"选一项：哪个应用；选一项：打开 / 切换 / 退出", run:"本机直接做（打开应用、切换前台），不需要 computer use", risk:"退出软件前确认未保存内容"},
+  2:{name:"应用框架", job:"在这个软件里去哪", say:["新开一个标签","切到刚才那个钉钉文档","关掉这个窗口"],
+     jev:"选一项：动作；选一项：哪个标签（候选来自 AX 读到的标签标题）", run:"快捷键、菜单项或 AppleScript", risk:"关窗口、关标签属于可能丢内容的动作，要确认"},
+  3:{name:"主内容", job:"对内容做什么", say:["总结这页","把这段改成蓝色","这里报错啥意思"],
+     jev:"选一项：读 / 改 / 问；框：指的是截图里哪一块", run:"读和问：取文字交给模型；改：两道确认后交给 Agent 或 computer use", risk:"改动类必须先看对比再应用"},
+  4:{name:"子页面 / 局部", job:"点哪里、填什么", say:["点确定","把邮箱填上","关掉这个弹窗"],
+     jev:"框：目标控件位置；是非概率：这个动作能否撤回", run:"先用 AX 直接点控件；找不到再由 computer use 按坐标点", risk:"「发送」「删除」「支付」一类不可撤回，必须 L 确认"},
+};
+
+const S_LABEL = {real:"实物已通",partial:"部分实物",sample:"样例跑通",proposal:"新提案",todo:"待开始"};
+const S_COLOR = {real:"var(--real)",partial:"var(--partial)",sample:"var(--sample)",proposal:"var(--proposal)",todo:"var(--todo)"};
+
+const chip = s => `<span class="chip s-${s}">${S_LABEL[s]}</span>`;
+
+// 计数
+let n = 0, all = [];
+GROUPS.forEach(g => g.items.forEach(it => { n++; all.push({step:g.step, s:it[2]}); }));
+document.getElementById("k-total").textContent = all.length;
+document.getElementById("k-done").textContent = all.filter(x => x.step <= 2).length;
+document.getElementById("k-real").textContent = all.filter(x => x.s === "real" || x.s === "partial").length;
+
+// 步骤卡
+const stepsEl = document.getElementById("steps");
+STEPS.forEach(st => {
+  const items = all.filter(x => x.step === st.id);
+  const order = ["real","partial","sample","proposal","todo"];
+  const bar = order.map(s => {
+    const c = items.filter(x => x.s === s).length;
+    return c ? `<i style="width:${c / items.length * 100}%;background:${S_COLOR[s]}"></i>` : "";
+  }).join("");
+  const main = st.status;
+  const btn = document.createElement("button");
+  btn.className = "step"; btn.dataset.f = st.id; btn.setAttribute("aria-pressed","false");
+  btn.innerHTML = `${st.here ? '<span class="here">目前在这里</span>' : ""}
+    <div class="no">STEP ${st.id}</div><h3>${["①","②","③","④"][st.id-1]} ${st.name}</h3>
+    <div class="goal">${st.goal}</div>
+    <div class="bar">${bar}</div>
+    <div>${chip(main)} <span class="muted" style="font-size:12px">${items.length} 个功能点</span></div>
+    <ul class="what">${st.what.map(w => `<li>${w}</li>`).join("")}</ul>
+    <span class="arrow"></span>`;
+  stepsEl.appendChild(btn);
+});
+
+// 功能清单
+const groupsEl = document.getElementById("groups");
+let k = 0;
+GROUPS.forEach(g => {
+  const el = document.createElement("section");
+  el.className = "group"; el.dataset.step = g.step;
+  el.innerHTML = `<header><div><div class="step-of">${["①","②","③","④"][g.step-1]} ${STEPS[g.step-1].name}</div><h3>${g.title}</h3></div>${chip(g.status)}</header>
+    <div class="gnote">${g.note}</div>
+    <ol>${g.items.map(it => `<li><span class="n">${String(++k).padStart(2,"0")}</span><span>${it[0]}<small>${it[1]}${it[3] ? " · " + it[3] : ""}</small></span>${it[2] !== g.status ? chip(it[2]) : ""}</li>`).join("")}</ol>
+    ${g.evidence ? `<div class="evidence"><b>实物证据：</b>${g.evidence}</div>` : ""}`;
+  groupsEl.appendChild(el);
+});
+
+// 筛选
+function filter(f){
+  document.querySelectorAll("#filters button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.f === String(f))));
+  document.querySelectorAll(".step").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.f === String(f))));
+  document.querySelectorAll(".group").forEach(g => g.classList.toggle("hidden", f !== "all" && g.dataset.step !== String(f)));
+}
+document.querySelectorAll("#filters button").forEach(b => b.addEventListener("click", () => filter(b.dataset.f)));
+document.querySelectorAll(".step").forEach(b => b.addEventListener("click", () => {
+  const on = b.getAttribute("aria-pressed") === "true";
+  filter(on ? "all" : b.dataset.f);
+  if (!on) document.getElementById("groups").scrollIntoView({behavior:"smooth", block:"start"});
+}));
+
+// 分区
+const zinfo = document.getElementById("zinfo");
+function showZone(z){
+  const d = ZONES[z];
+  document.querySelectorAll(".zone").forEach(e => e.classList.toggle("on", e.dataset.z === String(z)));
+  zinfo.innerHTML = `<h3><span class="tag" style="background:var(--z${z})">${z}</span>${d.name} · 管「${d.job}」</h3>
+    <dl class="kv">
+      <dt>示例说法</dt><dd class="say">${d.say.map(s => `<span>「${s}」</span>`).join("")}</dd>
+      <dt>Jev 判什么</dt><dd>${d.jev}</dd>
+      <dt>谁来执行</dt><dd>${d.run}</dd>
+      <dt>安全</dt><dd>${d.risk}</dd>
+    </dl>
+    <p class="muted" style="font-size:12px;margin-top:10px">示例说法和意图仅为提案，未实现。</p>`;
+}
+document.querySelectorAll(".zone").forEach(e => {
+  e.tabIndex = 0;
+  e.addEventListener("click", () => showZone(e.dataset.z));
+  e.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); showZone(e.dataset.z); } });
+});
+showZone(3);
+</script>
+</body>
+</html>

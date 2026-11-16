@@ -1,0 +1,21 @@
+{
+  "revision": "AIKEY-REVA-DESIGN-02",
+  "units": "mm",
+  "axes": "X width; Y up from USB base; +Z finger, -Z palm",
+  "wall": 1.6,
+  "split_z": -5.0,
+  "seam_gap": 0.2,
+  "body_top_y": 103.7,
+  "top_y": 109.8,
+  "top_slope": -0.2,
+  "key_running_clearance": 0.3,
+  "key_travel": 0.25,
+  "key_stop_travel": 0.35,
+  "main_board": {"size": [24,42,1], "center": [0,77,-8], "status":"outline candidate; full mainboard placement pending"},
+  "battery": {"size": [30,43,7], "center": [0,31.5,-6], "status":"full protected pack maximum target, supplier and swelling allowance pending; capacity not established"},
+  "battery_allowance": [1,1.5,1.5],
+  "lra": {"diameter":10,"thickness":3.7,"center":[0,24,6]},
+  "screw_centers_xy": [[-14,6],[14,6],[-18,98],[18,98]],
+  "prototype_process": "SLA/PA12 enclosure candidate; actual printer compensation and switch stop stackup require samples",
+  "status": "parameterized engineering development; not released for manufacture"
+}

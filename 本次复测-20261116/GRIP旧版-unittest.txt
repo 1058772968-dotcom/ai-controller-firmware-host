@@ -1,0 +1,17 @@
+test_alpha_png_readback (test_capture.GeometryTests) ... ok
+test_circle_resize_preserves_ratio_and_bounds (test_capture.GeometryTests) ... ok
+test_dpr_and_color_preserved (test_capture.GeometryTests) ... ok
+test_lasso_closed_and_resizable (test_capture.GeometryTests) ... ok
+test_line_lasso_rejected (test_capture.GeometryTests) ... ok
+test_presets_and_clamped_move (test_capture.GeometryTests) ... ok
+test_reverse_rectangle (test_capture.GeometryTests) ... ok
+test_cancel_emits_no_capture (test_capture.OverlayTests) ... ok
+test_controller_only_capture_flow (test_capture.OverlayTests) ... ok
+test_frame_independent_motion (test_capture.ProtocolTests) ... ok
+test_packet_validation (test_capture.ProtocolTests) ... ok
+test_stationary_gyro_and_calibration (test_capture.ProtocolTests) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.094s
+
+OK

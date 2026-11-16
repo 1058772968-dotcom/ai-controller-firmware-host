@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.16)
+include_directories("${CMAKE_CURRENT_LIST_DIR}/main")
+add_compile_definitions(CFG_TUSB_CONFIG_FILE="aikey_tusb_config.h")
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+project(aikey_rev_a)

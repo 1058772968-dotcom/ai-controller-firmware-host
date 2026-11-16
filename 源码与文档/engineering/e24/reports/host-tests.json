@@ -1,0 +1,119 @@
+{
+  "scope": "电脑端纯逻辑与配置检查；非 MCU 执行、非实物验证",
+  "results": [
+    {
+      "name": "board.json 生成文件一致",
+      "status": "PASS",
+      "exit": 0,
+      "log": ""
+    },
+    {
+      "name": "board.json 与 EDA 网表一致",
+      "status": "PASS",
+      "exit": 0,
+      "log": "网表：/Users/linxiansheng/Library/Mobile Documents/com~apple~CloudDocs/键盘/.claude/worktrees/embedded-firmware-integration-analysis-cf88d4/docs/engineering/项目档案/20261106-固件框架规划/证据/E24-网表回读-20261106.json\nU1 ESP32-S3-WROOM-1-N8R8：17 个 IO 有网络，board.json 登记 17 个\nPASS 引脚与网表一致\n"
+    },
+    {
+      "name": "分区表",
+      "status": "PASS",
+      "exit": 0,
+      "log": "  nvs       0x009000–0x00F000     24 KB\n  otadata   0x00F000–0x011000      8 KB\n  phy_init  0x011000–0x012000      4 KB\n  ota_0     0x020000–0x320000   3072 KB\n  ota_1     0x320000–0x620000   3072 KB\n  coredump  0x620000–0x630000     64 KB\n  storage   0x630000–0x800000   1856 KB\n  合计结束 0x800000 / Flash 0x800000\nPASS 分区表\n"
+    },
+    {
+      "name": "音频 FIR 系数一致",
+      "status": "PASS",
+      "exit": 0,
+      "log": ""
+    },
+    {
+      "name": "反例：网表改名应失败",
+      "status": "PASS",
+      "exit": 1,
+      "log": "网表：/var/folders/bw/xbf2cw9s1bz8_nc3h2wlz6yc0000gn/T/e24-host-28oyco0c/bad.json\nU1 ESP32-S3-WROOM-1-N8R8：17 个 IO 有网络，board.json 登记 17 个\nFAIL\n  AMP_EN: GPIO16 网表是 AMP_EN_X，board.json 写 AMP_EN\n"
+    },
+    {
+      "name": "编译 protocol_test",
+      "status": "PASS",
+      "exit": 0,
+      "log": ""
+    },
+    {
+      "name": "运行 protocol_test",
+      "status": "PASS",
+      "exit": 0,
+      "log": "PASS CRC reference vector; little-endian command; 256 bit corruptions; truncation/oversize; reserved/unknown commands; state/motion/fault frames\n"
+    },
+    {
+      "name": "编译 controller_test",
+      "status": "PASS",
+      "exit": 0,
+      "log": ""
+    },
+    {
+      "name": "运行 controller_test",
+      "status": "PASS",
+      "exit": 0,
+      "log": "PASS rated 20 ms press/release bounce; simultaneous mouse buttons; no duplicate edges\nPASS boot-held keys require release before activation\nPASS held keys are quarantined at transport resume until release\nPASS ownership ACK gates HID; no click replay after return\nPASS trigger and grant; mic warmup; raw release cutoff; mutual exclusion\nPASS rejected recording is not queued for later\nPASS haptic limit; lease timeout; stale session; reconnect-held trigger\nPASS duplicate, reordered and invalid commands have no repeated effect\nPASS timer and command sequence wraparound\nPASS driver fault fails closed\nPASS latched capture fault blocks recording after reconnect\nPASS mic gate: V, permission, settle, release, revoke, owner and lease\nPASS mic gate: disconnect, overflow abort and held-at-boot key\nAll controller checks passed; 140 events inspected, 9 resets\n"
+    },
+    {
+      "name": "编译 pointer_test",
+      "status": "PASS",
+      "exit": 0,
+      "log": ""
+    },
+    {
+      "name": "运行 pointer_test",
+      "status": "PASS",
+      "exit": 0,
+      "log": "静止 10 s 漂移：dx=0 dy=0 路径=0 计数\n慢移 3°/s × 2 s：dx=164 dy=0（理想 168）首个输出在第 6 帧\n手抖 8 Hz ±0.3°/s × 3 s：净位移 0，路径 0 计数\n甩动 300°/s × 0.15 s：dx=2267（无加速 1260）首个输出在第 0 帧\n点击稳定：按键后 65 ms 位移 0，之后 100 ms 恢复 53 计数\n滚转 45° 补偿开：dx=559 dy=-15\n滚转 45° 补偿关：dx=395 dy=-396（对照：斜着走）\n温漂 +0.3°/s 静止 30 s 后零偏变化 0.286\nPASS 校准/重来/静止漂移/慢移/手抖/甩动/点击稳定/滚转补偿/温漂/非法样本/编码/轴映射\n"
+    },
+    {
+      "name": "编译 audio_test",
+      "status": "PASS",
+      "exit": 0,
+      "log": ""
+    },
+    {
+      "name": "运行 audio_test",
+      "status": "PASS",
+      "exit": 0,
+      "log": "PASS 音频：FIR 频响与抗混叠、只取左槽、增益限幅、算术移位、电平统计、提示音包络与抢占\n"
+    },
+    {
+      "name": "编译 devcfg_test",
+      "status": "PASS",
+      "exit": 0,
+      "log": ""
+    },
+    {
+      "name": "运行 devcfg_test",
+      "status": "PASS",
+      "exit": 0,
+      "log": "PASS 配置通道：读/写/保存/校准/遥测/下载口令/默认值；错 session/CRC/参数/口令/保留字节均拒绝\n"
+    },
+    {
+      "name": "编译 devcfg_shim",
+      "status": "PASS",
+      "exit": 0,
+      "log": ""
+    },
+    {
+      "name": "运行 e24ctl_test（调参工具 × 固件 C 代码）",
+      "status": "PASS",
+      "exit": 0,
+      "log": "PASS test_assignments\nPASS test_audio_status_decode\nPASS test_cdc_baud_guard\nPASS test_cdc_parsing\nPASS test_command_frame\nPASS test_derive_axes_errors\nPASS test_errors_and_ops\nPASS test_frames_and_defaults\nPASS test_restore_defaults_keeps_axes\nPASS test_roundtrip_boundaries\nPASS test_tone_payload\nPASS test_tune_on_real_tty\nPASS test_tune_steps\nPASS test_validity_matches_firmware\nPASS test_wizard_all_mountings\nPASS test_wizard_shaking_retries\nPASS test_wizard_wrong_motion_reported\n17 项通过\n"
+    },
+    {
+      "name": "e24ctl list（hidapi 可加载）",
+      "status": "PASS",
+      "exit": 0,
+      "log": "HID  usage_page=0x0001 usage=0x02  AI KEY E24  序列号 CC68C7ABD3BC  bcdDevice 0x0124\nHID  usage_page=0x0001 usage=0x01  AI KEY E24  序列号 CC68C7ABD3BC  bcdDevice 0x0124\nHID  usage_page=0xFF00 usage=0x01  AI KEY E24  序列号 CC68C7ABD3BC  bcdDevice 0x0124\nHID  usage_page=0xFF00 usage=0x03  AI KEY E24  序列号 CC68C7ABD3BC  bcdDevice 0x0124\nCDC  /dev/cu.usbmodemCC68C7ABD3BC2\n"
+    },
+    {
+      "name": "全链路模拟（固件 × 上位机）",
+      "status": "PASS",
+      "exit": 0,
+      "log": "✓ A1 USB 描述符（usb_link.c 真实字节）（5/5）\n✓ A2 上电、枚举、校准（5/5）\n✓ A3 不开上位机，当普通鼠标用（5/5）\n✓ A4 调参通道（不接管）（8/8）\n✓ A5 接管 HOST、0x81 位移、交还（9/9）\n✓ A6 轴向向导全流程（错位安装，真实遥测）（4/4）\n✓ A7 租约超时（页面卡 1 s）（3/3）\n✓ A8 未实现能力降级（3/3）\n✓ A9 进下载模式（2/2）\n✓ A10 放在桌上时跟踪温漂（2/2）\n✓ L01 RELEASE 之后 750 ms：系统鼠标被打断（3/3）\n✓ L02 页面失焦后反复重连（5/5）\n✓ L03 断开再连接：旧监听器还活着（2/2）\n✓ A11 晚几秒才打开串口，还能看到启动日志（4/4）\n✓ A12 录音隐私闸门（8/8）\n✓ L05 IMU 任务先于 imu_init 启动（1/1）\n✓ L06 电脑睡眠时位移累积，唤醒后光标跳（2/2）\n✓ L07 CDC 暂停读取 100 ms（遥测整行性）（1/1）\n✓ L08 session 切换瞬间发配置（重试用了旧 session）（1/1）\n✓ L09 慢速平移被零偏跟踪吃掉（4/4）\n✓ L10 IMU 运行中故障与恢复（2/2）\n✓ L11 BMI270 初始化失败（虚焊）（2/2）\n✓ L12 按住 L 时点接管（2/2）\n✓ L13 HOST 时拔线再插（2/2）\n✓ F1 随机压力 60 s（4/4）\n\n89/89 项检查通过；固件 /Users/linxiansheng/Library/Mobile Documents/com~apple~CloudDocs/键盘/.claude/worktrees/embedded-firmware-integration-analysis-cf88d4/engineering/e24/firmware；上位机 /Users/linxiansheng/Library/Mobile Documents/com~apple~CloudDocs/键盘/.claude/worktrees/embedded-firmware-integration-analysis-cf88d4/prototype\n"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+flowchart TB
+  subgraph APP["L5 应用层  app/"]
+    direction LR
+    A1["启动编排<br/>SYS01 四步启动"]
+    A2["控制核心状态机<br/>owner POINTER/HOST · 租约 750ms<br/>录音/圈画互斥 · 安全释放"]
+    A3["语音会话<br/>按住 V + HOST + RECORD 许可"]
+    A4["状态上报<br/>0x80 状态 · 0x81 运动 · ACK"]
+    A5["故障降级<br/>SYS02 故障表"]
+  end
+
+  subgraph PROTO["L4 协议与链路层  protocol/ + transport/"]
+    direction LR
+    P1["协议 v1 编解码<br/>32 字节 · CRC16 · session/seq"]
+    P2["链路管理<br/>USB > BLE > Wi-Fi · 单一输入所有者"]
+    P3["USB 复合设备 TinyUSB<br/>HID 鼠标 RID1 · 控制 RID2 · 配置 RID3<br/>UAC 麦克风 16k · 开发版 CDC 日志"]
+    P4["BLE NimBLE<br/>HID over GATT · 自定义控制 GATT"]
+    P5["Wi-Fi<br/>TLS 语音流 · 10ms/帧"]
+  end
+
+  subgraph SVC["L3 系统服务层  services/"]
+    direction LR
+    S1["音频服务<br/>共享时钟启停 · 32k→16k 抽取<br/>隐私闸门 · 播放混音/渐变"]
+    S2["运动服务<br/>零偏/轴矩阵校准 · 相对位移 · 居中"]
+    S3["电源服务<br/>充电配置档 · 看门狗 10s · VBUS 事件 · 睡眠协调"]
+    S4["触觉服务<br/>效果队列 · ≤80ms · 互锁"]
+    S5["输入服务<br/>边沿事件 · 语音键快速截止 ≤10ms"]
+    S6["配置与存储<br/>NVS 版本化 · 校准 · 绑定"]
+    S7["诊断<br/>器件状态 · 故障位 · 复位原因 · 日志"]
+  end
+
+  subgraph DRV["L2 器件驱动层  drivers/"]
+    direction LR
+    D1["BMI270<br/>Bosch SensorAPI"]
+    D2["BQ25180<br/>读改写 + 回读"]
+    D3["DRV2605L<br/>LRA · GO=0 + 待机"]
+    D4["ICS-43434<br/>I²S RX 格式转换"]
+    D5["MAX98357A<br/>AMP_EN · 零输出防爆音"]
+    D6["按键<br/>去抖 25ms"]
+    D7["VBUS 检测<br/>GPIO15"]
+  end
+
+  subgraph BSP["L1 板级支持包  bsp_e24/"]
+    direction LR
+    B1["引脚表<br/>由 board.json 生成"]
+    B2["安全初始态<br/>AMP_EN 低 · I²S 静止"]
+    B3["I²C 总线管理<br/>单一互斥 · 20ms 超时 · 重试 2 次"]
+    B4["I²S 全双工<br/>单控制器 · 32kHz · 共享 BCLK/WS"]
+    B5["GPIO 中断 → 事件队列"]
+    B6["Flash 8MB / PSRAM 8MB<br/>分区表"]
+  end
+
+  subgraph IDF["L0 ESP-IDF 5.2.3 + FreeRTOS"]
+    direction LR
+    I1["driver: i2c_master · i2s_std · gpio"]
+    I2["esp_tinyusb · NimBLE · esp_wifi · mbedTLS"]
+    I3["nvs_flash · esp_pm · esp_timer"]
+  end
+
+  HW["硬件：ESP32-S3-N8R8 · BMI270 · ICS-43434 · MAX98357A · BQ25180 · DRV2605L · TPS3808 · 4 键"]
+
+  APP --> PROTO --> SVC --> DRV --> BSP --> IDF --> HW
+  APP --> SVC

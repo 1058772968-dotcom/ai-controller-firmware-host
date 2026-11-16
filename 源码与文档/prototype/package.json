@@ -1,0 +1,32 @@
+{
+  "name": "ai-key-grip-prototype",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node --check src/main.js && node --check src/reference-product.js && node --check src/internal-stack.js && node --check src/hand.js && node --check src/demo.js && node --check src/six-view-board.js && node --check build.mjs",
+    "test": "node scripts/verify-model.mjs && node scripts/verify-stack.mjs",
+    "build:desktop": "node desktop/build.mjs",
+    "check:desktop": "node --check desktop/main.js && node --check desktop/controller.js && node --check desktop/interaction.js && node --check desktop/build.mjs",
+    "test:desktop": "node --test desktop/interaction.test.js",
+    "build:loop": "node desktop-loop/build.mjs",
+    "check:loop": "node --check desktop-loop/main.js && node --check desktop-loop/device.js && node --check desktop-loop/editor.js && node --check desktop-loop/build.mjs",
+    "test:loop": "node --test desktop-loop/loop.test.js",
+    "build:mouse": "node mouse-voice/build.mjs",
+    "check:mouse": "node --check mouse-voice/main.js && node --check mouse-voice/interaction.js && node --check mouse-voice/scene.js && node --check mouse-voice/build.mjs",
+    "test:mouse": "node --test mouse-voice/interaction.test.js",
+    "build:island": "node island-poc/build.mjs",
+    "check:island": "node --check island-poc/main.js && node --check island-poc/scenes.js && node --check island-poc/devices.js && node --check island-poc/build.mjs",
+    "test:island": "node --test island-poc/island.test.js",
+    "build:host": "node aikey-host/build.mjs",
+    "check:host": "node --check aikey-host/main.js && node --check aikey-host/devcfg.js && node --check aikey-host/axes.js && node --check aikey-host/telemetry.js && node --check aikey-host/wizard.js && node --check aikey-host/sim.js && node --check aikey-host/build.mjs",
+    "test:host": "node --test aikey-host/host.test.js"
+  },
+  "dependencies": {
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.9"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "updated_at": "2026-10-05T13:45:47.690980+08:00",
+  "overall": "IN_PROGRESS_NOT_COMPLETE",
+  "accepted_scope": "User ID-01 image exterior, visual proportions first and actual dimensions separately; existing ESP32-S3 electronics/firmware functional baseline; no prototype",
+  "electrical": {
+    "five_board_types": "Mainboard and USB daughter latest native DRC and schematic parity: zero violations, zero unrouted, zero parity differences. Sensor main ERC: zero. Other boards retain prior accepted checkpoints.",
+    "remaining": "Whole-channel USB field-solver/fabricator review and impedance-qualified harness; remaining land-pattern review; final manufacturing outputs. Electrical compliance and physical tests are not claimed.",
+    "usb_main": "reports/usb-main-acceptance.json: six layers, 1.0 mm total, 0.19 mm routes, added ground return vias and copper-centreline skew <0.001 mm.",
+    "usb_daughter": "reports/usb-daughter-acceptance.json: four layers, 0.8 mm total, 0.23 mm routes, two crossover vias, connector-row skew within 0.5 mm.",
+    "six_board_types": "Main, USB, top key, back key, microphone, and new NKK SS12SDP4 power board. Native six-board pad/net review available in reports/native-interface-power-review.json."
+  },
+  "firmware": {
+    "sdk": "ESP-IDF 5.2.3 unchanged user SDK",
+    "build": "USB/BLE/Wi-Fi integrated ESP32-S3 ELF/BIN, USB/BLE/Wi-Fi ELF audits and seven sanitizer suites PASS",
+    "remaining": "Physical pairing/enumeration/NVS/audio/sensors/actuation unavailable without prototype; production USB identity and RF/power qualification"
+  },
+  "host": {
+    "browser_report": "reports/host-browser-validation.json",
+    "integration_report": "reports/host-integration.json",
+    "local_models": "real whisper and Qwen inference",
+    "scope": "Local text workspace with real whisper/Qwen, file apply/readback/undo. USB HID and BLE GATT adapters implemented. C-controller physical-mode fixtures and real PSK-TLS loopback tested; synthesized audio used.",
+    "remaining": "Physical USB/BLE/UAC/Wi-Fi hardware tests; cross-application integration",
+    "computer_checks": {
+      "integration_cases": 44,
+      "browser_cases": 19,
+      "physical_adapter_fixture_browser_cases": 8,
+      "tls_audio_cases": 6,
+      "wifi_loopback_browser_cases": 11
+    },
+    "wifi_report": "reports/wifi-browser-validation.json"
+  },
+  "physical": "No prototype. No RF, microphone, charge/thermal, battery, actuation-force or endurance acceptance claimed.",
+  "historical_mechanical_checkpoint": {
+    "native": "mechanical/AIKEY_REVA_DESIGN12.FCStd",
+    "report": "reports/mechanical-design12-validation.json",
+    "parts": 72,
+    "static_candidate_pairs": 275,
+    "static_collisions": 0,
+    "all_four_key_sweeps": "PASS; exact B-rep delta against passed DESIGN11; exterior envelope separately checked in DESIGN12 build",
+    "remaining": "mic retention, LRA seat attachment, top retention/seam alignment, acoustic/optical/wire/coax paths, power/reset/strap hardware, exports",
+    "usb_mating": "PASS; reports/usb-mating-design05.json",
+    "mainboard_retention": "PASS nominal static and key sweep: four captive-nut edge clamps, corner-only end stops and tool-access cavities",
+    "usb_board_retention": "PASS nominal static and key sweep; two captive-nut edge clamps and axial end stops",
+    "battery_retention": "PASS nominal solid/enclosure envelope/static/key sweep; protected pack supplier dimensions and foam compression pending"
+  },
+  "mechanical": {
+    "status": "ID01_REFERENCE_VISUAL_REFINEMENT_IN_PROGRESS",
+    "native_candidate": "mechanical/id01-reference/AIKEY_ID01_REFERENCE_02.FCStd",
+    "exterior_scope": "Native exterior only; not an accepted complete assembly",
+    "reference": "spec/exterior-reference.json",
+    "remaining": "Image-fit review; internal PCB, battery, antenna and USB placement; real mechanisms, supports, fasteners, harness, thermal and assembly requalification. Old mechanical passes do not transfer."
+  }
+}

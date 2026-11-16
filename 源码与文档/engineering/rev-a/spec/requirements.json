@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "accepted_scope": "ID-01 user-image exterior correction / ESP32-S3 functional baseline; design, compilable firmware and host verification; no physical prototype",
+  "requirements": [
+    {
+      "id": "M01",
+      "requirement": "Native editable FreeCAD enclosure, caps, internal supports, PCB mounts, battery restraint, USB support, microphone duct, LED guide, LRA seat, power/reset access, strap anchors and fasteners",
+      "acceptance": "Save/reopen, valid solids, measured dimensions, assembly and motion clearances, export readback",
+      "status": "user_reference_exterior_rebuild_in_progress_internal_remapping_required",
+      "evidence": [
+        "reports/mechanical-design12-validation.json",
+        "reports/mechanical-design12-build.json",
+        "reports/usb-mating-design05.json",
+        "spec/exterior-reference.json"
+      ]
+    },
+    {
+      "id": "M02",
+      "requirement": "Match latest user ID-01 image by visual proportions, as explicitly selected by user; retain 116 mm nominal height and report actual dimensions, left drawing key and hanging index trigger.",
+      "acceptance": "Native save/reopen and dimensions readback, six-view reference comparison, visible feature review; source perspective/annotation inconsistencies listed separately.",
+      "status": "ID01_native_exterior_refinement_visual_priority_not_full_assembly_accepted",
+      "evidence": [
+        "spec/exterior-reference.json",
+        "mechanical/id01-reference/native-readback.json",
+        "mechanical/id01-reference/silhouette-comparison.json"
+      ],
+      "historical_evidence": [
+        "reports/mechanical-design04-dimensions.json"
+      ]
+    },
+    {
+      "id": "M03",
+      "requirement": "Shared ECAD/MCAD board outlines, holes and orientation",
+      "acceptance": "At least three noncollinear fiducial points, thickness and connector opening alignment",
+      "status": "previous_design12_ecad_mcad_evidence_retained_new_ID01_placements_require_revalidation",
+      "evidence": [
+        "reports/ecad-fiducial-source.json",
+        "reports/ecad-mcad-design12.json",
+        "reports/usb-mating-design05.json"
+      ]
+    },
+    {
+      "id": "E01",
+      "requirement": "Complete native KiCad schematics and routed PCB set with actual symbols/footprints",
+      "acceptance": "Datasheet pin review, ERC, DRC including schematic parity and unrouted connections; no silent exclusions",
+      "status": "latest_main_usb_native_drc_pass_manufacturer_lands_reviewed_other_reviews_outputs_pending",
+      "evidence": [
+        "reports/main-board-erc.json",
+        "reports/main-board-drc.json",
+        "reports/top-key-erc.json",
+        "reports/top-key-drc.json",
+        "reports/back-key-erc.json",
+        "reports/back-key-drc.json",
+        "reports/usb-board-erc.json",
+        "reports/usb-board-drc.json",
+        "reports/mic-board-erc.json",
+        "reports/mic-board-drc.json",
+        "reports/sensor-land-acceptance.json",
+        "reports/sensor-main-erc.json",
+        "reports/usb-main-drc.json",
+        "reports/usb-daughter-drc.json"
+      ]
+    },
+    {
+      "id": "E02",
+      "requirement": "BQ24074 PowerPath, TPS63802 3V3, protected 1S battery and NTC, USB sink limits and ESD",
+      "acceptance": "Reviewed netlist and component calculations; fabrication outputs consistent with source",
+      "status": "native_pin_net_and_nominal_power_calculation_pass_pack_thermal_layout_and_outputs_pending",
+      "evidence": [
+        "reports/native-interface-power-review.json"
+      ]
+    },
+    {
+      "id": "E03",
+      "requirement": "S3 external antenna, IMU SPI, switched PDM mic, four buttons, RGB, DRV2605L LRA, MAX17048, EN reset, recovery pads",
+      "acceptance": "BOM, footprint pin mapping, shared pin-definition validation",
+      "status": "native_329_pad_nets_28_gpio_and_71_key_pin_nets_pass_remaining_component_review_pending",
+      "evidence": [
+        "reports/native-interface-power-review.json",
+        "reports/sensor-land-acceptance.json",
+        "reports/peripheral-driver-review.json"
+      ]
+    },
+    {
+      "id": "F01",
+      "requirement": "ESP-IDF firmware for S3 N16R8 with fault handling",
+      "acceptance": "Build real ELF/BIN with pinned SDK and dependencies; record source hashes",
+      "status": "integrated_build_and_native_checks_pass_physical_pending",
+      "evidence": [
+        "reports/firmware-build-current.json",
+        "reports/firmware-haptic-derated-build.log"
+      ]
+    },
+    {
+      "id": "F02",
+      "requirement": "Ordinary HID L/R; negotiated special-mode ownership; lease timeout; no duplicate/stuck buttons or replay after reconnect",
+      "acceptance": "Native core behavioral tests and host integration with same firmware core",
+      "status": "native_core_and_computer_protocol_integration_pass_physical_transport_pending",
+      "evidence": [
+        "reports/firmware-native-tests.json",
+        "reports/host-integration.json",
+        "reports/host-browser-validation.json"
+      ]
+    },
+    {
+      "id": "F03",
+      "requirement": "USB HID + UAC + control, BLE HID + custom GATT, Wi-Fi voice transport",
+      "acceptance": "Compile transports, validate descriptors/protocol in host tests; physical enumeration/radio separately pending",
+      "status": "usb_ble_wifi_build_elf_and_computer_protocol_tests_pass_physical_pending",
+      "evidence": [
+        "reports/usb-descriptor-check.json",
+        "reports/ble-descriptor-check.json",
+        "reports/wifi-elf-check.json",
+        "reports/firmware-native-tests.json",
+        "reports/wifi-audio-validation.json",
+        "reports/wifi-browser-validation.json"
+      ]
+    },
+    {
+      "id": "F04",
+      "requirement": "IMU relative pointing and recenter; PDM capture/decimation; battery, LEDs, calibrated haptic controls",
+      "acceptance": "Driver build and deterministic numerical/behavior tests; real sensing/calibration pending",
+      "status": "driver_build_and_native_behavior_pass_physical_calibration_pending",
+      "evidence": [
+        "reports/firmware-native-tests.json",
+        "reports/peripheral-driver-review.json",
+        "reports/firmware-build.log"
+      ]
+    },
+    {
+      "id": "F05",
+      "requirement": "Mic off by default; trigger hold and host grant; drawing/voice/haptic exclusion; fail closed on timeout/disconnect",
+      "acceptance": "Adversarial transitions, held keys, boot, stale commands and cancellation tests",
+      "status": "core_tests_pass_physical_pending",
+      "evidence": [
+        "reports/firmware-native-tests.json"
+      ]
+    },
+    {
+      "id": "H01",
+      "requirement": "Host radial menu, annotation, scroll, paging, zoom, pan, locked context, editable transcription, comparison and undo",
+      "acceptance": "Executable computer-side flow, integration tests; distinguish fixtures from real devices/services",
+      "status": "local_text_workbench_and_usb_ble_adapters_computer_fixtures_pass_cross_application_pending",
+      "evidence": [
+        "reports/host-browser-validation.json",
+        "reports/host-physical-browser.json",
+        "reports/wifi-browser-validation.json",
+        "reports/host-integration.json",
+        "reports/local-asr-inference.json",
+        "reports/local-text-inference.json"
+      ]
+    },
+    {
+      "id": "H02",
+      "requirement": "Confirm before sending and independently before applying; real execution receipt before success feedback",
+      "acceptance": "Negative tests plus one real local file-edit transaction with rollback",
+      "status": "local_file_two_confirmation_apply_readback_undo_and_cancellation_pass",
+      "evidence": [
+        "reports/host-integration.json",
+        "reports/host-browser-validation.json",
+        "reports/local-text-inference.json"
+      ]
+    },
+    {
+      "id": "P01",
+      "requirement": "Physical RF, audio quality, endurance, drift, charge/thermal, battery fit, durability and ergonomics",
+      "acceptance": "Requires manufactured prototype and measurements",
+      "status": "requires_physical_prototype"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+import { build } from 'esbuild';
+import { readFile, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+const base = new URL('./', import.meta.url);
+const bundle = await build({ entryPoints: [fileURLToPath(new URL('main.js', base))], bundle: true, write: false, minify: true, format: 'iife', target: ['es2022'], legalComments: 'inline' });
+const [html, css] = await Promise.all([readFile(new URL('template.html', base), 'utf8'), readFile(new URL('style.css', base), 'utf8')]);
+const output = html.replace('/*__STYLE__*/', () => css).replace('/*__SCRIPT__*/', () => bundle.outputFiles[0].text.replaceAll('</script', '<\\/script'));
+const file = new URL('../AI键盘-实机上位机.html', base);
+await writeFile(file, output);
+console.log('Built ' + fileURLToPath(file));

@@ -1,0 +1,42 @@
+[0.00s 打开]
+I (10775) e24-bringup: 心跳 键位 0x0 | 内部堆 365 I (25775) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (30775) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (35775) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (40775) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (45775) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (50775) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (55775) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (60775) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (65775) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+[45.44s 断开 SerialException]
+[46.21s 打开]
+[46.38s 断开 SerialException]
+[47.81s 打开]
+I (728) esp_psram: SPI SRAM memory test OK
+I (737) cpu_start: Project name:     aikey_e24
+I (751) e24-bringup: 板型 AIKEY-E24 | 固件 aikey_e24 1 | IDF v5.2.3-dirty
+I (751) e24-bringup: 芯片 ESP32-S3 rev v0.2，2 核 | 运行分区 ota_0 @0x20000
+I (751) e24-bringup: 复位原因：上电
+I (751) e24-bringup: Flash 8192 KB，PSRAM 8192 KB -> PASS
+I (752) e24-bringup: VBUS 存在
+I (5752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (10752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (15752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (20752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (25752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (30752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (35752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (40752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (45752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (50752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (55752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (60752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (65752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (70752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (75752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (80752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (85752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (90752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (95752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (100752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB
+I (105752) e24-bringup: 心跳 键位 0x0 | 内部堆 365 KB | PSRAM 空闲 8189 KB

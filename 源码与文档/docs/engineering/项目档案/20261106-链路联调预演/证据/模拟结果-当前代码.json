@@ -1,0 +1,580 @@
+{
+  "source": "当前工作区",
+  "total": 81,
+  "failed": 20,
+  "scenarios": [
+    {
+      "id": "A1",
+      "title": "USB 描述符（usb_link.c 真实字节）",
+      "checks": [
+        {
+          "name": "ID1 鼠标集合 5 字节输入",
+          "ok": true,
+          "detail": "{\"top\":{\"page\":1,\"usage\":2},\"in\":40,\"out\":0}"
+        },
+        {
+          "name": "ID2 厂商集合 0xFF00/1，收发各 32 字节",
+          "ok": true,
+          "detail": "{\"top\":{\"page\":65280,\"usage\":1},\"in\":256,\"out\":256}"
+        },
+        {
+          "name": "ID3 厂商集合 0xFF00/3，收发各 32 字节",
+          "ok": true,
+          "detail": "{\"top\":{\"page\":65280,\"usage\":3},\"in\":256,\"out\":256}"
+        },
+        {
+          "name": "VID/PID/bcdDevice 与预案一致",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "配置描述符长度自洽",
+          "ok": true,
+          "detail": "总长 107，接口 3"
+        }
+      ],
+      "simMs": 50
+    },
+    {
+      "id": "A2",
+      "title": "上电、枚举、校准",
+      "checks": [
+        {
+          "name": "状态报告约 10 Hz",
+          "ok": true,
+          "detail": "2 s 内 20 帧"
+        },
+        {
+          "name": "静置后完成校准",
+          "ok": true,
+          "detail": "第 2405 ms"
+        },
+        {
+          "name": "未实现能力的故障位 = 音频+触觉",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "session 全程不变",
+          "ok": true,
+          "detail": "1 个"
+        },
+        {
+          "name": "零偏估计接近注入值 0.4/-0.3/0.2",
+          "ok": true,
+          "detail": "0.403,-0.2983,0.2"
+        }
+      ],
+      "simMs": 5100
+    },
+    {
+      "id": "A3",
+      "title": "不开上位机，当普通鼠标用",
+      "checks": [
+        {
+          "name": "转动后首个位移报告的固件内延迟",
+          "ok": true,
+          "detail": "5 ms（不含 USB 和系统）"
+        },
+        {
+          "name": "转 30°：位移 ≈ 30×28 = 840 计数",
+          "ok": true,
+          "detail": "x=873 y=0"
+        },
+        {
+          "name": "静止不漂",
+          "ok": true,
+          "detail": "2 s 内 0"
+        },
+        {
+          "name": "按 L → 鼠标左键，去抖约 25 ms",
+          "ok": true,
+          "detail": "27 ms"
+        },
+        {
+          "name": "松 L",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "simMs": 6480
+    },
+    {
+      "id": "A4",
+      "title": "调参通道（不接管）",
+      "checks": [
+        {
+          "name": "读回默认参数",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "写入后以设备回显为准（量化）",
+          "ok": true,
+          "detail": "[33.34,0.8]"
+        },
+        {
+          "name": "NVS 失败给中文错误",
+          "ok": true,
+          "detail": "保存失败：保存失败（NVS）"
+        },
+        {
+          "name": "校准中状态 = 1",
+          "ok": true,
+          "detail": "state=1"
+        },
+        {
+          "name": "静置 1.2 s 后恢复可用",
+          "ok": true,
+          "detail": "state=2"
+        },
+        {
+          "name": "调参期间没发 HELLO/CLAIM",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "调参时系统光标照常动",
+          "ok": true,
+          "detail": "x=536"
+        },
+        {
+          "name": "session 全程不变",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "simMs": 5009
+    },
+    {
+      "id": "A5",
+      "title": "接管 HOST、0x81 位移、交还",
+      "checks": [
+        {
+          "name": "HELLO→CLAIM→HOST",
+          "ok": true,
+          "detail": "4 ms"
+        },
+        {
+          "name": "转动后首帧 0x81 的固件内延迟",
+          "ok": true,
+          "detail": "4 ms（不含 USB、浏览器）"
+        },
+        {
+          "name": "0x81 位移守恒 ≈ 840",
+          "ok": true,
+          "detail": "x=873 y=0，220 帧"
+        },
+        {
+          "name": "0x81 帧率不超过 250 Hz",
+          "ok": true,
+          "detail": "220 帧/s"
+        },
+        {
+          "name": "HOST 期间不发系统鼠标位移",
+          "ok": true,
+          "detail": "0 个"
+        },
+        {
+          "name": "按键走事件，不走系统鼠标",
+          "ok": true,
+          "detail": "[[\"L\",true],[\"L\",false]]"
+        },
+        {
+          "name": "KEEPALIVE 保活",
+          "ok": true,
+          "detail": "11 次"
+        },
+        {
+          "name": "RECENTER 有 ACK",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "RELEASE 后立即回到系统鼠标",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "simMs": 5506
+    },
+    {
+      "id": "A6",
+      "title": "轴向向导全流程（错位安装，真实遥测）",
+      "checks": [
+        {
+          "name": "向导推导并写入轴映射",
+          "ok": true,
+          "detail": "[[1,2,0],6]"
+        },
+        {
+          "name": "方向核对通过",
+          "ok": true,
+          "detail": "向右转 → 光标向右 30.0°；向上抬 → 光标向上 -30.0°"
+        },
+        {
+          "name": "遥测约 100 Hz，无解析丢弃",
+          "ok": true,
+          "detail": "样本 960，丢弃 0"
+        },
+        {
+          "name": "写入后向右转光标向右",
+          "ok": true,
+          "detail": "dx=870"
+        }
+      ],
+      "simMs": 14110
+    },
+    {
+      "id": "A7",
+      "title": "租约超时（页面卡 1 s）",
+      "checks": [
+        {
+          "name": "约 750 ms 后设备自己交还系统鼠标",
+          "ok": true,
+          "detail": "750 ms"
+        },
+        {
+          "name": "页面恢复后自动重新接管",
+          "ok": true,
+          "detail": "+800 ms"
+        },
+        {
+          "name": "新 session 生效",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "simMs": 3906
+    },
+    {
+      "id": "A8",
+      "title": "未实现能力降级",
+      "checks": [
+        {
+          "name": "caps 标记音频/触觉不可用",
+          "ok": true,
+          "detail": "{\"audio\":false,\"haptic\":false,\"calibrated\":true}"
+        },
+        {
+          "name": "录音、振动不下发",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "DRAW 可用",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "simMs": 3126
+    },
+    {
+      "id": "A9",
+      "title": "进下载模式",
+      "checks": [
+        {
+          "name": "先收到回复再重启",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "固件写入 FORCE_DOWNLOAD 后重启",
+          "ok": true,
+          "detail": "X restart download=1"
+        }
+      ],
+      "simMs": 3223
+    },
+    {
+      "id": "A10",
+      "title": "放在桌上时跟踪温漂",
+      "checks": [
+        {
+          "name": "30 s 内零偏跟上",
+          "ok": true,
+          "detail": "Z 零偏 0.501 °/s"
+        },
+        {
+          "name": "跟踪期间光标基本不动",
+          "ok": true,
+          "detail": "漂 -4 计数"
+        }
+      ],
+      "simMs": 34100
+    },
+    {
+      "id": "L01",
+      "title": "RELEASE 之后 750 ms：系统鼠标被打断",
+      "checks": [
+        {
+          "name": "拖动中左键保持按下",
+          "ok": false,
+          "detail": "按下 1，1.5 s 后 0，沿 [{\"t\":3933,\"from\":0,\"to\":1},{\"t\":4359,\"from\":1,\"to\":0}]"
+        },
+        {
+          "name": "已交还后 session 不再变化",
+          "ok": false,
+          "detail": "0x42021 → 0x42022"
+        },
+        {
+          "name": "已交还后 host_connected 清零",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "simMs": 5506
+    },
+    {
+      "id": "L02",
+      "title": "页面失焦后反复重连",
+      "checks": [
+        {
+          "name": "失焦期间不发 HELLO",
+          "ok": false,
+          "detail": "10 s 内 15 次"
+        },
+        {
+          "name": "失焦期间 session 不变",
+          "ok": false,
+          "detail": "多了 5 次"
+        },
+        {
+          "name": "失焦期间系统鼠标按键不被切断",
+          "ok": false,
+          "detail": "按下 1，5 s 后 0，切断 1 次"
+        },
+        {
+          "name": "没有误报“设备未应答”",
+          "ok": false,
+          "detail": "2596 ms: 设备未应答 HELLO，请重新插拔后再连接"
+        },
+        {
+          "name": "回到页面重新接管",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "simMs": 13448
+    },
+    {
+      "id": "L03",
+      "title": "断开再连接：旧监听器还活着",
+      "checks": [
+        {
+          "name": "新连接收到全部位移",
+          "ok": true,
+          "detail": "x=873"
+        },
+        {
+          "name": "已关闭的旧 HidLink 不再收到报告",
+          "ok": false,
+          "detail": "旧链路仍收到 220 帧，x=873"
+        }
+      ],
+      "simMs": 5406
+    },
+    {
+      "id": "A11",
+      "title": "晚几秒才打开串口，还能看到启动日志",
+      "checks": [
+        {
+          "name": "能看到 复位原因（查崩溃要用）",
+          "ok": true,
+          "detail": "FIFO 只留最后 512 字节，收到 512 字节，从“-bringup: 芯片 ESP32-S3 re…”开始"
+        },
+        {
+          "name": "能看到 I2C 三地址探测结果",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "能看到 BMI270 就绪",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "能看到 陀螺仪已校准",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "simMs": 10900
+    },
+    {
+      "id": "L05",
+      "title": "IMU 任务先于 imu_init 启动",
+      "checks": [
+        {
+          "name": "bmi270_init 期间没有并发读传感器",
+          "ok": false,
+          "detail": "初始化期间 imu_read 被调用 45 次（模型 0.9 s）"
+        }
+      ],
+      "simMs": 3100
+    },
+    {
+      "id": "L06",
+      "title": "电脑睡眠时位移累积，唤醒后光标跳",
+      "checks": [
+        {
+          "name": "挂起期间不累积位移",
+          "ok": false,
+          "detail": "acc_x=1703"
+        },
+        {
+          "name": "唤醒后光标不跳",
+          "ok": false,
+          "detail": "dx=1713"
+        }
+      ],
+      "simMs": 5600
+    },
+    {
+      "id": "L07",
+      "title": "CDC 暂停读取 100 ms（遥测整行性）",
+      "checks": [
+        {
+          "name": "FIFO 满时整行丢弃，不写半行",
+          "ok": false,
+          "detail": "半行 8 次，解析丢弃 1 行"
+        }
+      ],
+      "simMs": 4205
+    },
+    {
+      "id": "L08",
+      "title": "session 切换瞬间发配置（重试用了旧 session）",
+      "checks": [
+        {
+          "name": "配置请求自动换到新 session",
+          "ok": false,
+          "detail": "读参数失败：session 不符"
+        }
+      ],
+      "simMs": 3858
+    },
+    {
+      "id": "L09",
+      "title": "慢速平移被零偏跟踪吃掉",
+      "checks": [
+        {
+          "name": "2 °/s 匀速 6 s 位移完整（±10%）",
+          "ok": false,
+          "detail": "应 336，实得 113"
+        },
+        {
+          "name": "零偏不被运动带跑",
+          "ok": false,
+          "detail": "Z 零偏 0.2 → -1.62 °/s"
+        },
+        {
+          "name": "停下后不回爬",
+          "ok": false,
+          "detail": "5 s 内回爬 -92 计数"
+        },
+        {
+          "name": "手持 1 °/s 慢移 6 s 位移基本完整（±25%）",
+          "ok": false,
+          "detail": "应 168，实得 39"
+        }
+      ],
+      "simMs": 23600
+    },
+    {
+      "id": "L10",
+      "title": "IMU 运行中故障与恢复",
+      "checks": [
+        {
+          "name": "状态报告带 IMU 故障位",
+          "ok": true,
+          "detail": "faults=7"
+        },
+        {
+          "name": "故障位与实际行为一致（要么恢复且清位，要么真的停用）",
+          "ok": false,
+          "detail": "faults=7，日志说“停用指向”，恢复后仍出位移 450"
+        }
+      ],
+      "simMs": 6406
+    },
+    {
+      "id": "L11",
+      "title": "BMI270 初始化失败（虚焊）",
+      "checks": [
+        {
+          "name": "上报 IMU 故障，按键仍可用",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "不再空转读总线",
+          "ok": false,
+          "detail": "失败读 344 次（每次真机都打一条 I2C 错误日志）"
+        }
+      ],
+      "simMs": 8100
+    },
+    {
+      "id": "L12",
+      "title": "按住 L 时点接管",
+      "checks": [
+        {
+          "name": "提示先松键，不误报设备无响应",
+          "ok": false,
+          "detail": "请先松开 L / R，再连接一次"
+        },
+        {
+          "name": "不影响正在按住的左键",
+          "ok": false,
+          "detail": "沿 [{\"t\":3129,\"from\":0,\"to\":1},{\"t\":3147,\"from\":1,\"to\":0}]"
+        }
+      ],
+      "simMs": 7642
+    },
+    {
+      "id": "L13",
+      "title": "HOST 时拔线再插",
+      "checks": [
+        {
+          "name": "页面进入断开状态，按键不悬挂",
+          "ok": true,
+          "detail": "{\"t\":3146,\"phase\":\"lost\",\"text\":\"设备已断开\"}"
+        },
+        {
+          "name": "固件回到普通鼠标、输入已清",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "simMs": 3546
+    },
+    {
+      "id": "F1",
+      "title": "随机压力 60 s",
+      "checks": [
+        {
+          "name": "全部松开后鼠标按键清零",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "没有悬挂的鼠标按键",
+          "ok": true,
+          "detail": "0 次"
+        },
+        {
+          "name": "页面按键状态清零",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "上位机待确认命令不无限增长",
+          "ok": true,
+          "detail": "0 条"
+        }
+      ],
+      "simMs": 68171
+    }
+  ]
+}

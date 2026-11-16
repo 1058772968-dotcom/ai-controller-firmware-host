@@ -1,0 +1,167 @@
+{
+  "date": "2026-10-29",
+  "version": "1.0",
+  "scope": "R2 schematic-based firmware requirements; no firmware or EDA mutation",
+  "source_mode": "saved local readback, not live EDA read",
+  "project_uuid": "da0f3deddf6b4ffa81a00b0b085918dd",
+  "schematic_uuid": "8c7883d2e7a5118d",
+  "component_count": 56,
+  "logical_pin_count": 244,
+  "gpio_signal_rows": 16,
+  "sources": [
+    {
+      "path": "hardware/validation/ai-engineering/20261029-controller-reacceptance/snapshots/schematic.json",
+      "sha256": "4cf33dab56cb668cef469fab7c2ce497413bc5fc41b4e4575e290144ff7eeb03"
+    },
+    {
+      "path": "hardware/validation/ai-engineering/20261029-controller-closeout/snapshots/06-reopened-schematic.json",
+      "sha256": "e5340814a7f8a88e477ac0158a3f3a717033a396eeef209b4ddf0730d458ca81"
+    },
+    {
+      "path": "hardware/validation/ai-engineering/20261029-controller-closeout/操作记录.md",
+      "sha256": "39e2fd9e5048e26e0900bf3ebdc4355a5bace511c326d9ec99db7ec626f94128"
+    },
+    {
+      "path": "hardware/validation/ai-engineering/20261029-controller-reacceptance/复验报告.md",
+      "sha256": "ca00c2e5eec6638b69f90517a762608e4d77d90a9bf235cf8f10a56fb4b09102"
+    },
+    {
+      "path": "hardware/validation/ai-engineering/20261029-controller-closeout/sources/Knowles-SPH0645-original.pdf",
+      "sha256": "22b3bb6e219b081420cc8be1084b11214fd8098cbe13793cf259a40e36b70a99"
+    },
+    {
+      "path": "engineering/rev-a/README.md",
+      "sha256": "cbfef32c14654f55e756a99313044cca0e7a45406b16f4417495727a90853ce0"
+    },
+    {
+      "path": "engineering/rev-a/firmware/core/board_config.h",
+      "sha256": "57e4c9afed9de3067ce14f622a2592c91ba400d061e77ddb4fb3c161a0d37108"
+    },
+    {
+      "path": "engineering/rev-a/firmware/core/protocol.c",
+      "sha256": "b66d497a8ee7d56d3329dc234a0ba56b3b3fc93368911343737bff81928415f3"
+    },
+    {
+      "path": "engineering/rev-a/firmware/core/protocol.h",
+      "sha256": "7752d3c2529cf07a45ee3d34698389b165642e6f221a7e982bd7c8f375b9c561"
+    },
+    {
+      "path": "engineering/rev-a/firmware/core/controller.c",
+      "sha256": "621ac35a0c70bae4dc80de2d87dd36babb1612c51fdb5684934c90cc4c93754b"
+    },
+    {
+      "path": "engineering/rev-a/firmware/core/peripherals.c",
+      "sha256": "c0dcf9f23b52358ab0518dfe75df786e398e8594a735ee7e0f685443d4ad5fc7"
+    },
+    {
+      "path": "engineering/rev-a/firmware/main/audio_capture.c",
+      "sha256": "76b6e76b17d0180fd22b5fd421b68612fd8a6183f666308f87ba974e941d5f9e"
+    },
+    {
+      "path": "engineering/rev-a/firmware/main/imu.c",
+      "sha256": "f12cac514e837bdfbc281da1612c4049cc644d83e25ca43e73d0943409d5ff83"
+    },
+    {
+      "path": "engineering/rev-a/firmware/main/app_main.c",
+      "sha256": "21e71e7cd1e962d8a12f1e8d88c75b53510c676045a6179da9aefcecc2f6c0b5"
+    },
+    {
+      "path": "engineering/rev-a/firmware/main/usb_transport.c",
+      "sha256": "f9305c6c590c6bb4392f9e0c898991fbdc5c9e7fd6bebe91c457d37129ccb536"
+    },
+    {
+      "path": "engineering/rev-a/firmware/sdkconfig.defaults",
+      "sha256": "e3d3d1cc29bda3f98bedb389ee55beb8e4df075c2183d8930cc1370f5e9696aa"
+    },
+    {
+      "path": "engineering/rev-a/firmware/partitions.csv",
+      "sha256": "6588fb2151d10c7a30ffdddf23b4d6d502b71675b7bb3990d715879a315aa814"
+    },
+    {
+      "path": "engineering/rev-a/host/web/interaction.js",
+      "sha256": "553ce6269ddd4f6a248b9bda9331a812ded94da53cf439aa8b08c67b45deaef8"
+    }
+  ],
+  "files": [
+    {
+      "path": "AI控制器R2_嵌入式开发需求规格书_v1.0.docx",
+      "bytes": 55869,
+      "sha256": "c022bb5573cbb241638c5bfd26ac78e71d96eb57905af78cda3d520477daacf1"
+    },
+    {
+      "path": "AI控制器R2_嵌入式开发需求规格书_v1.0.md",
+      "bytes": 25757,
+      "sha256": "fa860696d5343f031989f4f43c9088b5fbe82ed5c3d451773040a9e09b5dff92"
+    },
+    {
+      "path": "附件/AI控制器-R2-原理图与PCB起点.epro2",
+      "bytes": 547321,
+      "sha256": "0a03ab05073435187535dea5138a19cf853c569ec096e4f81c6bcb4b8b99ca55"
+    },
+    {
+      "path": "附件/AI控制器-模块原理图-R2.esch",
+      "bytes": 1169065,
+      "sha256": "816165f48d2ac18cba6b6f18f58b70e5368ab1fffa83435297d1687324edac57"
+    },
+    {
+      "path": "附件/AI控制器-模块原理图-R2.pdf",
+      "bytes": 29631435,
+      "sha256": "92f6d38e2e49385daf54964fa15164372c967f60bc0741ac0fbeb7fb4dd82d75"
+    },
+    {
+      "path": "附件/BOM-R2.csv",
+      "bytes": 6921,
+      "sha256": "e76504403f945f98b97e19fffc5666ba16f3ddac0709a4cfa8ae6e932dbf93d1"
+    },
+    {
+      "path": "附件/GPIO接口表.csv",
+      "bytes": 1131,
+      "sha256": "62300362c5805c7716657ae47adcb2e112c3d9c10d3ce4bb5451f17770cc00b7"
+    },
+    {
+      "path": "附件/全器件引脚网络表.csv",
+      "bytes": 7660,
+      "sha256": "9091b48bdd90ece937726f09aae79f9e31953f0deebf6acc08796182b9e81324"
+    },
+    {
+      "path": "附件/原理图网表R2.json",
+      "bytes": 153211,
+      "sha256": "6e46e5faff576e0eaca609a34f83f969b5de53700bb8cf6750ab36874e0cfca2"
+    },
+    {
+      "path": "附件/复验证据/PCB1-本轮217项DRC.png",
+      "bytes": 487171,
+      "sha256": "d189f7ae1844be59150ee4d0bfc2c431ef4b17b35fa63b83e1397ec4d35f51b8"
+    },
+    {
+      "path": "附件/复验证据/snapshots/pcb-drc.json",
+      "bytes": 374244,
+      "sha256": "5ddb7bce211aff3d56c1b7aae50f5f1fe079d4e55408faba7c37b65f96660708"
+    },
+    {
+      "path": "附件/复验证据/snapshots/schematic.json",
+      "bytes": 302304,
+      "sha256": "4cf33dab56cb668cef469fab7c2ce497413bc5fc41b4e4575e290144ff7eeb03"
+    },
+    {
+      "path": "附件/复验证据/复验报告.md",
+      "bytes": 4273,
+      "sha256": "ca00c2e5eec6638b69f90517a762608e4d77d90a9bf235cf8f10a56fb4b09102"
+    },
+    {
+      "path": "附件/复验证据/复验结果.json",
+      "bytes": 5225,
+      "sha256": "1a34c07957861a1832d5f6060544aaa264dee18630fd210631ab8a33d1f81f83"
+    },
+    {
+      "path": "附件/复验证据/未定义电气属性.csv",
+      "bytes": 2975,
+      "sha256": "4234eeba0746ba75cde43a33b0d1f3f52a6718f7a4c3468a69f598ddd4229183"
+    },
+    {
+      "path": "附件/复验证据/连接与转板复验.csv",
+      "bytes": 2452,
+      "sha256": "647948b37b5dd7433bd5be8efbde1480b2f790ebfe43dcc07423207cfd86e023"
+    }
+  ]
+}

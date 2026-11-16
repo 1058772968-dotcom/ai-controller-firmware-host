@@ -1,0 +1,160 @@
+TAP version 13
+# Subtest: 读参数：固件默认值与 DEFAULT_CFG 一致
+ok 1 - 读参数：固件默认值与 DEFAULT_CFG 一致
+  ---
+  duration_ms: 620.3905
+  type: 'test'
+  ...
+# Subtest: 写参数：500 组随机值经固件量化后，回显与本地编码逐字节相同
+ok 2 - 写参数：500 组随机值经固件量化后，回显与本地编码逐字节相同
+  ---
+  duration_ms: 17.1225
+  type: 'test'
+  ...
+# Subtest: 固件拒绝的情况：越界、保留位、session、CRC、存储失败
+ok 3 - 固件拒绝的情况：越界、保留位、session、CRC、存储失败
+  ---
+  duration_ms: 2.161917
+  type: 'test'
+  ...
+# Subtest: 轴向推导：24 种安装方向写进固件后，右转光标向右、抬头光标向上
+ok 4 - 轴向推导：24 种安装方向写进固件后，右转光标向右、抬头光标向上
+  ---
+  duration_ms: 33.241208
+  type: 'test'
+  ...
+# Subtest: 轴向推导：与 e24ctl.py 的 derive_axes 结果一致
+ok 5 - 轴向推导：与 e24ctl.py 的 derive_axes 结果一致
+  ---
+  duration_ms: 38.277125
+  type: 'test'
+  ...
+# Subtest: 轴向推导：姿势不合格时报错，不写入
+ok 6 - 轴向推导：姿势不合格时报错，不写入
+  ---
+  duration_ms: 0.247458
+  type: 'test'
+  ...
+# Subtest: 遥测解析：只收完整的 imu 行，日志和断行不混入
+ok 7 - 遥测解析：只收完整的 imu 行，日志和断行不混入
+  ---
+  duration_ms: 0.263792
+  type: 'test'
+  ...
+# Subtest: 积分：角速度对时间积分
+ok 8 - 积分：角速度对时间积分
+  ---
+  duration_ms: 0.07775
+  type: 'test'
+  ...
+# Subtest: 请求队列：一次一帧，错配回复不算数，session 换了重发一次
+ok 9 - 请求队列：一次一帧，错配回复不算数，session 换了重发一次
+  ---
+  duration_ms: 5.798458
+  type: 'test'
+  ...
+# Subtest: 请求队列：超时报错后后续还能用；失败原因是中文
+ok 10 - 请求队列：超时报错后后续还能用；失败原因是中文
+  ---
+  duration_ms: 32.125167
+  type: 'test'
+  ...
+# Subtest: 滑块连拖：只发最新一份
+ok 11 - 滑块连拖：只发最新一份
+  ---
+  duration_ms: 6.35975
+  type: 'test'
+  ...
+# Subtest: 仅调参：不发 HELLO/CLAIM；接管后才转发按键；交还后回普通鼠标
+ok 12 - 仅调参：不发 HELLO/CLAIM；接管后才转发按键；交还后回普通鼠标
+  ---
+  duration_ms: 8.394542
+  type: 'test'
+  ...
+# Subtest: 租约到期被动交还：按住的键要松开
+ok 13 - 租约到期被动交还：按住的键要松开
+  ---
+  duration_ms: 0.171792
+  type: 'test'
+  ...
+# Subtest: 轴向向导全流程：错位安装的虚拟手柄写入后核对通过
+ok 14 - 轴向向导全流程：错位安装的虚拟手柄写入后核对通过
+  ---
+  duration_ms: 1065.140167
+  type: 'test'
+  ...
+# Subtest: WebHID 接线：报告 2、3 分流，带偏移的 DataView 也能读对
+ok 15 - WebHID 接线：报告 2、3 分流，带偏移的 DataView 也能读对
+  ---
+  duration_ms: 1.114041
+  type: 'test'
+  ...
+# Subtest: Web Serial 接线：115200、打开 DTR、跨块拼行；打不开时说清原因
+ok 16 - Web Serial 接线：115200、打开 DTR、跨块拼行；打不开时说清原因
+  ---
+  duration_ms: 23.191208
+  type: 'test'
+  ...
+# Subtest: 逐项测试：判定函数
+ok 17 - 逐项测试：判定函数
+  ---
+  duration_ms: 2.936125
+  type: 'test'
+  ...
+# Subtest: 逐项测试：WAV 头和样本
+ok 18 - 逐项测试：WAV 头和样本
+  ---
+  duration_ms: 0.294625
+  type: 'test'
+  ...
+# Subtest: 逐项测试：虚拟手柄走完连接、麦克风、闸门、提示音
+ok 19 - 逐项测试：虚拟手柄走完连接、麦克风、闸门、提示音
+  ---
+  duration_ms: 610.029375
+  type: 'test'
+  ...
+# Subtest: 逐项测试：四键全按才通过，缺键点名焊盘，结束后交还控制权
+ok 20 - 逐项测试：四键全按才通过，缺键点名焊盘，结束后交还控制权
+  ---
+  duration_ms: 956.513291
+  type: 'test'
+  ...
+# Subtest: 逐项测试：真实录音路径，只有按住 V 才有声音，松键归零，可回放
+ok 21 - 逐项测试：真实录音路径，只有按住 V 才有声音，松键归零，可回放
+  ---
+  duration_ms: 2453.798333
+  type: 'test'
+  ...
+# Subtest: 逐项测试：旧固件不响应音频命令时说清楚
+ok 22 - 逐项测试：旧固件不响应音频命令时说清楚
+  ---
+  duration_ms: 199.990959
+  type: 'test'
+  ...
+# Subtest: 逐项测试：报告列出每项状态和板号
+ok 23 - 逐项测试：报告列出每项状态和板号
+  ---
+  duration_ms: 16.332666
+  type: 'test'
+  ...
+# Subtest: POC 档：两种设备名都能选中，闸门项报不适用而不是隐私故障
+ok 24 - POC 档：两种设备名都能选中，闸门项报不适用而不是隐私故障
+  ---
+  duration_ms: 0.310416
+  type: 'test'
+  ...
+# Subtest: 音频状态解码与固件一致
+ok 25 - 音频状态解码与固件一致
+  ---
+  duration_ms: 5.466375
+  type: 'test'
+  ...
+1..25
+# tests 25
+# suites 0
+# pass 25
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6289.084083

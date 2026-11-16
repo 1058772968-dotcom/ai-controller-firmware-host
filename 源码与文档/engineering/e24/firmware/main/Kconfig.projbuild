@@ -1,0 +1,21 @@
+menu "E24 应用"
+choice E24_PROFILE
+    prompt "构建档位"
+    default E24_PROFILE_LINK
+config E24_PROFILE_BRINGUP
+    bool "点亮：只用 GPIO，日志走 USB-Serial-JTAG"
+config E24_PROFILE_LINK
+    bool "联调：TinyUSB（HID 鼠标/控制/配置 + CDC 日志）+ BMI270 指向"
+endchoice
+config E24_MIC_POC_OPEN
+    bool "POC：主机打开麦克风流就放行，不用按 V（放宽规格 AUD 02，只烧台架板）"
+    depends on E24_PROFILE_LINK
+    default n
+    help
+        把板子当普通 USB 麦克风用，便于闭环测试录音效果。主机关流时闸门立刻关，
+        设备名改成 AI KEY Mic POC 以便识别。不得用于量产或交付给用户的固件。
+config E24_IMU_ODR_HZ
+    int "BMI270 输出频率 (Hz)"
+    default 200
+    range 100 800
+endmenu

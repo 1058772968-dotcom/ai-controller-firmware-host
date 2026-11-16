@@ -1,0 +1,40 @@
+{
+  "revision": "AIKEY-E24",
+  "mcu": "ESP32-S3-WROOM-1-N8R8",
+  "flash_bytes": 8388608,
+  "psram_bytes": 8388608,
+  "sdk": "5.2.3",
+  "source": {
+    "netlist": "docs/engineering/项目档案/20261106-固件框架规划/证据/E24-网表回读-20261106.json",
+    "netlist_sha256": "270dbab001784eed42c37feab08cfeaacb5ebb9cb9a21e496035536acf8f5209",
+    "eda_project_uuid": "584e735356994bad95ca9e4e224750d0",
+    "schematic": "02-E21原理图-零警告基线",
+    "mcu_designator": "U1"
+  },
+  "pins": {
+    "I2S_BCLK":         {"gpio": 4,  "net": "I2S_BCLK",         "dir": "out",    "boot_level": 0},
+    "I2S_WS":           {"gpio": 5,  "net": "I2S_WS",           "dir": "out",    "boot_level": 0},
+    "MIC_DOUT":         {"gpio": 6,  "net": "MIC_DOUT",         "dir": "in"},
+    "SPK_DIN":          {"gpio": 7,  "net": "SPK_DIN",          "dir": "out",    "boot_level": 0},
+    "I2C_SDA":          {"gpio": 8,  "net": "I2C_SDA",          "dir": "od"},
+    "I2C_SCL":          {"gpio": 9,  "net": "I2C_SCL",          "dir": "od"},
+    "IMU_INT":          {"gpio": 10, "net": "IMU_INT",          "dir": "in"},
+    "CHG_INT_N":        {"gpio": 11, "net": "CHG_INT",          "dir": "in",     "active_low": true},
+    "KEY_LEFT":         {"gpio": 12, "net": "KEY_LEFT",         "dir": "in",     "active_low": true},
+    "KEY_RIGHT":        {"gpio": 13, "net": "KEY_RIGHT",        "dir": "in",     "active_low": true},
+    "KEY_VOICE":        {"gpio": 14, "net": "KEY_VOICE",        "dir": "in",     "active_low": true},
+    "USB_VBUS_PRESENT": {"gpio": 15, "net": "USB_VBUS_PRESENT", "dir": "in"},
+    "AMP_EN":           {"gpio": 16, "net": "AMP_EN",           "dir": "out",    "boot_level": 0},
+    "USB_DM":           {"gpio": 19, "net": "USB_D_MINUS_MCU",  "dir": "usb"},
+    "USB_DP":           {"gpio": 20, "net": "USB_D_PLUS_MCU",   "dir": "usb"},
+    "KEY_DRAW":         {"gpio": 21, "net": "KEY_DRAW",         "dir": "in",     "active_low": true},
+    "BOOT_N":           {"gpio": 0,  "net": "BOOT_N",           "dir": "strap"}
+  },
+  "non_gpio_nets": {"EN": "MCU_EN"},
+  "reserved_gpio": [3, 35, 36, 37, 45, 46],
+  "i2c": {"frequency_hz": 100000, "timeout_ms": 20, "retries": 2,
+          "addr7": {"BMI270": 104, "BQ25180": 106, "DRV2605L": 90}},
+  "audio": {"i2s_sample_hz": 32000, "slot_bits": 32, "pcm_output_hz": 16000, "settle_ms": 50},
+  "timing_ms": {"debounce": 25, "voice_hold": 280, "voice_double": 300, "side_hold": 180, "host_lease": 750},
+  "status": "M0 工程输入；引脚来自网表，电气与时序均未实测"
+}

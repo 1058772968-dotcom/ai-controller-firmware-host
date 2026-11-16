@@ -1,0 +1,3 @@
+# 联调档：TinyUSB 接管 USB，日志与遥测走 CDC 口（/dev/cu.usbmodem*）
+CONFIG_E24_PROFILE_LINK=y
+CONFIG_ESP_CONSOLE_NONE=y

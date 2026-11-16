@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="aikey-session" content="__SESSION_TOKEN__"><title>AI KEY · 本地工作台</title><link rel="stylesheet" href="/style.css"><script type="module" src="/app.js"></script></head>
+<body>
+<header><a class="wordmark" href="/">AI <b>KEY</b><span>工作台 / REV A</span></a><div class="status"><i></i><span id="connection">连接本地服务…</span></div></header>
+<main>
+<section class="workspace" aria-label="文件工作区">
+  <div class="workspace-head"><div><p class="eyebrow">01 / 指定目标</p><h1>指向内容，<br>把想法说出来。</h1></div><div class="workspace-tools"><label for="files">工作区文件</label><select id="files"></select><button id="refresh" class="quiet">重新读取</button></div></div>
+  <div class="document-toolbar"><span id="file-name">—</span><span id="view-info">100% · 第 1 页</span><button id="clear-marks" class="quiet">清除标注</button></div>
+  <div id="mark-tools" class="mark-tools" hidden aria-label="标注工具"><button data-tool="region" aria-pressed="true">圈选区域</button><button data-tool="arrow">关系箭头</button><button data-tool="laser">临时指示</button><small>可拖动选区四角调整范围</small></div>
+  <div id="viewport" tabindex="0" aria-label="目标文件内容"><div id="surface"><pre id="document"></pre><svg id="marks" aria-label="标注层"></svg></div><div id="radial" class="radial" hidden><strong>选择模式</strong><div id="radial-options"></div><small>L 确认 · R 取消</small></div></div>
+  <div class="document-foot"><span id="mode-label">普通鼠标</span><span id="target-label">尚未锁定目标</span></div>
+  <div class="controls" aria-label="电脑端控制器模拟"><div><span class="eyebrow">电脑端固件模拟</span><p>F1 / F2 = L / R<br>F3 = 语音 V · F4 = 侧键 S</p></div><div class="keys"><button data-key="L" aria-label="模拟左键 L">L</button><button data-key="R" aria-label="模拟右键 R">R</button><button data-key="S" aria-label="模拟侧键 S"><b>S</b><small>短按圆盘 / 长按标注</small></button><button data-key="V" aria-label="模拟语音 V"><b>V</b><small>按住说话 / 松开预览</small></button></div></div>
+  <div id="motion-zone" class="motion-zone" hidden tabindex="0" aria-label="模拟手腕倾斜"><span>在此左右 / 上下移动，模拟手腕倾斜。离开立即回中。</span><button id="center" class="quiet">回中</button></div>
+  <p class="boundary">当前没有实物控制器。按钮输入经过同一份 C 固件状态机；文件读写与本地模型推理真实执行。当前编辑范围是所选文本工作区。</p>
+</section>
+<aside class="assistant" aria-label="语音编辑流程">
+  <div class="assistant-title"><p class="eyebrow">02 / 说出要求</p><span class="local-tag">本地处理</span></div>
+  <h2 id="phase-title">准备好，再按住 V</h2><p id="phase-help">按下时锁定文件。保持 280 毫秒开始录音，松开后检查文字。</p>
+  <div class="context-card"><span>锁定的目标</span><strong id="locked-path">未锁定</strong><small id="locked-hash">内容快照会在触发时保存</small></div>
+  <div class="input-actions"><button id="type-instead" class="quiet">锁定目标，输入要求</button><label class="file-button quiet">导入 WAV<input id="audio-file" type="file" accept="audio/wav,.wav"></label></div>
+  <label class="field-label" for="instruction">可编辑的语音预览</label><textarea id="instruction" rows="5" placeholder="例如：把按钮颜色从灰色改成蓝色，保留其他内容。" disabled></textarea>
+  <div class="adapter-row"><label for="adapter">处理方式</label><select id="adapter"><option value="local-ai">本地 Qwen 文本模型</option><option value="exact-replace">精确替换工具（非 AI）</option></select></div>
+  <p id="asr-info" class="small-note">whisper small · 中文语音识别</p>
+  <div class="actions"><button id="send" class="primary" disabled>确认发送 <span>↗</span></button><button id="cancel" class="quiet">取消 / R</button></div>
+  <section id="comparison" hidden aria-label="修改对比"><div class="section-line"><p class="eyebrow">03 / 检查修改</p><span>尚未写入</span></div><p id="summary"></p><div class="compare-tabs"><button id="before-tab" class="quiet">修改前</button><button id="after-tab" class="quiet" aria-pressed="true">修改后</button><button id="diff-tab" class="quiet">差异</button></div><pre id="comparison-text"></pre><button id="apply" class="primary">确认应用到文件</button></section>
+  <section id="receipt" hidden aria-label="执行回执"><p class="eyebrow">04 / 已核对结果</p><h3 id="receipt-title">文件已写入并读回</h3><p id="receipt-details"></p><button id="undo" class="quiet">撤销本次应用</button></section>
+  <div id="notice" role="status" aria-live="polite">等待操作。</div>
+  <details><summary>工作区与验收边界</summary><p id="root-path"></p><p>真实语音识别、模型提案、文件应用与撤销均在本机运行。硬件麦克风、USB 枚举、无线连接和跨应用控制还需单独验收。</p><pre id="device-state"></pre></details>
+</aside>
+</main><footer><span>AI KEY / ID-06 C</span><span>先看预览，再确认应用。</span></footer>
+</body></html>

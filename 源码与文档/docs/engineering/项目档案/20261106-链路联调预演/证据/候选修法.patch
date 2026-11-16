@@ -1,0 +1,216 @@
+--- a/engineering/e24/firmware/components/aikey_core/controller.c
++++ b/engineering/e24/firmware/components/aikey_core/controller.c
+@@ -41,9 +41,13 @@
+ void ak_poll(ak_controller *c,uint8_t raw_buttons,uint32_t now_ms) {
+     c->now_ms=now_ms;raw_buttons &= AK_ALL;
+     if(c->host_connected && elapsed(now_ms,c->lease_ms)>=AK_HOST_LEASE_MS) {
+-        c->host_connected=false; release_inputs(c);
+-        c->session++; if(!c->session) c->session=1;
+-        c->event_sequence=0; c->command_seen=false;
++        const bool active=c->owner==AK_HOST || c->recording || c->drawing || c->haptic;
++        c->host_connected=false;
++        if(active) {
++            release_inputs(c);
++            c->session++; if(!c->session) c->session=1;
++            c->event_sequence=0; c->command_seen=false;
++        }
+     }
+     /* A physical release cuts microphone power without waiting for debounce. */
+     if(!(raw_buttons & AK_VOICE)) stop_mic(c);
+@@ -78,12 +82,12 @@
+     ak_result result=AK_OK;
+     switch(command) {
+     case AK_HELLO:
+-        if(!c->host_connected) release_inputs(c);
+         c->host_connected=true;c->lease_ms=now_ms;
+         break;
+     case AK_KEEPALIVE: c->lease_ms=now_ms; break;
+     case AK_CLAIM:
+         if((c->buttons | c->raw) & (AK_L|AK_R)) { result=AK_HELD;break; }
++        c->blocked|=c->buttons|c->raw;
+         c->owner=AK_HOST;c->hid_buttons=0;c->lease_ms=now_ms;
+         event(c,AK_OWNER,AK_HOST);break;
+     case AK_RELEASE: release_inputs(c); c->lease_ms=now_ms; break;
+--- a/engineering/e24/firmware/components/aikey_core/pointer.c
++++ b/engineering/e24/firmware/components/aikey_core/pointer.c
+@@ -4,7 +4,8 @@
+ 
+ #define CAL_WINDOW_MS 1200u      /* 与旧 GRIP 上位机一致：静置 1.2 s 完成零偏 */
+ #define TRACK_AFTER_MS 1500u     /* 已校准后，静止超过此时长才慢速跟踪温漂 */
+-#define TRACK_ALPHA 0.002f
++#define TRACK_ALPHA 0.0005f     /* 200 Hz 下 τ≈10 s：只跟温漂 */
++#define TRACK_DEV_DPS 0.6f       /* 相对零偏超过它就不是温漂 */
+ #define STILL_DEV_DPS 1.5f       /* 相对慢速均值的抖动上限 */
+ #define STILL_ACC_TOL 0.08f      /* |a| 偏离 1 g 的上限 */
+ #define UP_BLEND 0.02f           /* 重力方向互补滤波：加速度计权重 */
+@@ -164,7 +165,8 @@
+         }
+         return false;
+     }
+-    if (still && p->still_ms > TRACK_AFTER_MS)
++    p->track_ms = still && dev < TRACK_DEV_DPS ? p->track_ms + (uint32_t)(dt * 1000.0f + 0.5f) : 0;
++    if (p->track_ms > TRACK_AFTER_MS)
+         for (int i = 0; i < 3; i++) p->bias[i] += TRACK_ALPHA * (g[i] - p->bias[i]);
+ 
+     /* 5. 去零偏后分解为 水平(h, 右为正) / 竖直(v, 下为正) 角速度 */
+--- a/engineering/e24/firmware/components/aikey_core/include/pointer.h
++++ b/engineering/e24/firmware/components/aikey_core/include/pointer.h
+@@ -37,6 +37,7 @@
+     float cal_sum[3];
+     uint32_t cal_count, cal_started_ms;
+     uint32_t still_ms;      /* 连续静止时长 */
++    uint32_t track_ms;      /* 连续满足温漂跟踪门限的时长 */
+     float up[3];            /* 估计的“上”方向（设备坐标，单位向量） */
+     bool up_valid;
+     float smooth[2];        /* 平滑后的 (水平, 竖直) 角速度 */
+--- a/engineering/e24/firmware/main/link_app.c
++++ b/engineering/e24/firmware/main/link_app.c
+@@ -42,7 +42,7 @@
+ static SemaphoreHandle_t s_lock;          /* 保护 s_ptr 与位移累加 */
+ static int32_t s_acc_x, s_acc_y;          /* 未发出的位移 */
+ static volatile bool s_telemetry;
+-static volatile bool s_imu_ok;
++static volatile bool s_imu_ok, s_imu_go;
+ static QueueHandle_t s_events;            /* 已编码的 32 字节事件包 */
+ static TaskHandle_t s_imu_task;
+ 
+@@ -76,12 +76,17 @@
+ {
+     (void)arg;
+     uint32_t last_tel = 0, errors = 0;
++    while (!s_imu_go) ulTaskNotifyTake(pdTRUE, portMAX_DELAY);   /* imu_init 成功后才开始读 */
+     for (;;) {
+         /* 数据就绪中断；超时则按轮询读一次（中断线异常时仍能工作，但会在日志里体现） */
+         ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(20));
+         imu_sample_t s;
+         if (imu_read(&s) != ESP_OK) {
+-            if (++errors == 10) { s_imu_ok = false; ESP_LOGE(TAG, "IMU 连续读失败，停用指向"); }
++            if (++errors == 10) {
++                s_imu_ok = false;
++                ESP_LOGE(TAG, "IMU 连续读失败，停用指向（重启后恢复）");
++                for (;;) ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
++            }
+             continue;
+         }
+         errors = 0;
+@@ -150,6 +155,8 @@
+     xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 10, &s_imu_task, 1);
+     if (imu_init(CONFIG_E24_IMU_ODR_HZ, s_imu_task) == ESP_OK) {
+         s_imu_ok = true;
++        s_imu_go = true;
++        xTaskNotifyGive(s_imu_task);
+         ESP_LOGI(TAG, "陀螺仪：请静置约 1.2 s 完成上电校准");
+     } else {
+         s_ctrl.hardware_faults |= FAULT_IMU;
+@@ -175,6 +182,7 @@
+             xSemaphoreTake(s_lock, portMAX_DELAY); s_acc_x = s_acc_y = 0; ak_pointer_recenter(&s_ptr); xSemaphoreGive(s_lock);
+         }
+         was_mounted = mounted;
++        if (!mounted) { xSemaphoreTake(s_lock, portMAX_DELAY); s_acc_x = s_acc_y = 0; ak_pointer_recenter(&s_ptr); xSemaphoreGive(s_lock); }
+ 
+         ak_poll(&s_ctrl, bsp_keys_raw(), t);
+         if (s_ctrl.buttons != last_buttons) {  /* 点击稳定 */
+--- a/engineering/e24/firmware/main/usb_link.c
++++ b/engineering/e24/firmware/main/usb_link.c
+@@ -136,8 +136,9 @@
+ void usb_link_telemetry(const char *line, int len)
+ {
+     if (!atomic_load(&s_cdc_open) || len <= 0) return;
+-    if (tinyusb_cdcacm_write_queue(TINYUSB_CDC_ACM_0, (const uint8_t *)line, (size_t)len) == (size_t)len)
+-        tinyusb_cdcacm_write_flush(TINYUSB_CDC_ACM_0, 0);
++    if (tud_cdc_n_write_available(0) < (uint32_t)len) return;   /* 放不下整行就丢整行 */
++    tinyusb_cdcacm_write_queue(TINYUSB_CDC_ACM_0, (const uint8_t *)line, (size_t)len);
++    tinyusb_cdcacm_write_flush(TINYUSB_CDC_ACM_0, 0);
+ }
+ 
+ void usb_link_reboot_to_download(void)
+--- a/prototype/island-poc/devices.js
++++ b/prototype/island-poc/devices.js
+@@ -22,11 +22,12 @@
+     if (!dev.opened) await dev.open();
+     this.device = dev;
+     this.transport = { sendReport: (id, bytes) => dev.sendReport(id, bytes) };
+-    dev.addEventListener('inputreport', (e) => {
++    this.onInput = (e) => {
+       const bytes = new Uint8Array(e.data.buffer, e.data.byteOffset, e.data.byteLength);
+       if (e.reportId === 2) this.receive(bytes);
+       else if (e.reportId === 3) this.onConfig?.(bytes);
+-    });
++    };
++    dev.addEventListener('inputreport', this.onInput);
+     this.onDisconnect = (e) => { if (e.device === dev) this.lost('设备已断开'); };
+     navigator.hid.addEventListener('disconnect', this.onDisconnect);
+     this.onState({ phase: 'waiting', text: `已打开 ${dev.productName || 'AI KEY'}，等待设备状态报告…` });
+@@ -52,12 +53,13 @@
+       // 新会话：旧序号、旧按键全部作废，按住的键必须先松开。
+       if (this.buttons) this.emitButtons(0);
+       this.session = r.session; this.seq = r.commandSequence; this.owner = 'POINTER'; this.pending.clear();
+-      this.helloTries = 0; if (this.wantHost) this.hello();
++      this.helloTries = 0; if (this.wantHost && !this.suspended) this.hello();
+     }
+     // hardware_faults bit1 = 音频、bit2 = 触觉（E24 首版固件未实现）：显示“暂不可用”，不发对应命令、不重试。
+     const caps = { audio: !(r.faults & 2), haptic: !(r.faults & 4), calibrated: r.flags.calibrated };
+     if (!this.caps || caps.audio !== this.caps.audio || caps.haptic !== this.caps.haptic || caps.calibrated !== this.caps.calibrated) { this.caps = caps; this.onCaps?.(caps); }
+     if (r.type === EVT.ACK) this.ack(r);
++    if (this.waitRelease && r.type === EVT.STATUS && !(r.buttons & (KEY.L | KEY.R))) { this.waitRelease = false; if (this.wantHost && !this.suspended) { this.helloTries = 0; this.hello(); } }
+     if (r.type === EVT.OWNER || r.owner !== this.owner) {
+       this.owner = r.owner;
+       if (r.owner !== 'HOST' && this.buttons) this.emitButtons(0); // 租约到期等被动交还：按住的键不能悬着
+@@ -80,7 +82,7 @@
+     if (!p) return;
+     this.onLog?.(`ACK ${NAMES[p.command]} → ${r.result}`, r.result === 'OK' ? 'p' : 'e');
+     if (p.command === CMD.HELLO && r.result === 'OK' && this.wantHost && !this.suspended) this.send(CMD.CLAIM);
+-    if (p.command === CMD.CLAIM && r.result === 'HELD') this.onState({ phase: 'pointer', text: '请先松开 L / R，再连接一次' });
++    if (p.command === CMD.CLAIM && r.result === 'HELD') { clearTimeout(this.helloTimer); this.waitRelease = true; this.onState({ phase: 'pointer', text: '请先松开 L / R，松开后自动接管' }); }
+     if (r.result === 'INVALID' && (p.command === CMD.FEEDBACK || p.command === CMD.RECORD)) {
+       this.caps = { ...this.caps, [p.command === CMD.FEEDBACK ? 'haptic' : 'audio']: false }; this.onCaps?.(this.caps);
+     }
+@@ -89,7 +91,7 @@
+     if (this.helloTries++ >= 3) { this.onState({ phase: 'error', text: '设备未应答 HELLO，请重新插拔后再连接' }); return; }
+     this.send(CMD.HELLO);
+     clearTimeout(this.helloTimer);
+-    this.helloTimer = setTimeout(() => { if (this.owner !== 'HOST' && this.wantHost) this.hello(); }, 600);
++    this.helloTimer = setTimeout(() => { if (this.owner !== 'HOST' && this.wantHost && !this.suspended) this.hello(); }, 600);
+   }
+   startKeepalive() { this.stopKeepalive(); this.timer = setInterval(() => this.send(CMD.KEEPALIVE), 200); }
+   stopKeepalive() { clearInterval(this.timer); this.timer = null; }
+@@ -127,11 +129,13 @@
+     this.stopKeepalive(); clearTimeout(this.helloTimer);
+     if (this.owner === 'HOST') await this.send(CMD.RELEASE);
+     if (this.onDisconnect) navigator.hid.removeEventListener('disconnect', this.onDisconnect);
++    this.device?.removeEventListener('inputreport', this.onInput);
+     try { await this.device?.close(); } catch {}
+     this.device = null; this.transport = null; this.session = null; this.owner = 'POINTER';
+   }
+   lost(text) {
+-    this.stopKeepalive(); if (this.buttons) this.emitButtons(0);
++    this.stopKeepalive(); clearTimeout(this.helloTimer); if (this.buttons) this.emitButtons(0);
++    this.device?.removeEventListener('inputreport', this.onInput);
+     this.session = null; this.owner = 'POINTER'; this.device = null; this.transport = null;
+     this.onState({ phase: 'lost', text });
+   }
+--- a/prototype/aikey-host/devcfg.js
++++ b/prototype/aikey-host/devcfg.js
+@@ -79,8 +79,8 @@
+     const w = this.waiting;
+     if (w && r.op === w.op && r.tx === w.tx) { this.waiting = null; clearTimeout(w.timer); w.resolve(r); }
+   }
+-  once(op, payload) {
+-    const session = this.getSession();
++  once(op, payload, sessionOverride) {
++    const session = sessionOverride ?? this.getSession();
+     if (session === null || session === undefined) return Promise.reject(new Error('还没收到设备状态，请稍等'));
+     this.tx = (this.tx + 1) >>> 0;
+     const tx = this.tx;
+@@ -95,8 +95,10 @@
+   // USB 重连后 session 会换：用最新状态里的 session 重发一次。
+   request(op, payload) {
+     const run = async () => {
++      const sent = this.getSession();
+       let r = await this.once(op, payload);
+-      if (r.code === 2) r = await this.once(op, payload);
++      // 回复里带设备当前 session；状态报告最多晚 100 ms，不能等它
++      if (r.code === 2) r = await this.once(op, payload, r.session !== sent ? r.session : undefined);
+       if (r.code) throw new Error(`${OP_NAME[op] ?? op}失败：${RESULT_TEXT[r.code] ?? r.code}`);
+       return r;
+     };

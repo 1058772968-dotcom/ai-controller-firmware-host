@@ -1,0 +1,23 @@
+{
+  "revision": "AIKEY-REVA-DESIGN-01",
+  "mcu": "ESP32-S3-WROOM-1U-N16R8",
+  "sdk": "5.2.3",
+  "pins": {
+    "USB_VBUS": 1, "KEY_L": 4, "KEY_R": 5, "KEY_VOICE": 6, "KEY_SIDE": 7,
+    "I2C_SDA": 8, "I2C_SCL": 9,
+    "IMU_CS": 10, "IMU_MOSI": 11, "IMU_SCLK": 12, "IMU_MISO": 13, "IMU_INT1": 14,
+    "PDM_CLK": 15, "PDM_DATA": 16, "HAPTIC_EN": 17, "CHG_N": 18,
+    "USB_DM": 19, "USB_DP": 20, "MIC_EN": 21,
+    "LED_R": 38, "LED_G": 39, "LED_B": 40,
+    "CHG_EN1": 41, "CHG_EN2": 42,
+    "UART_TX": 43, "UART_RX": 44,
+    "GAUGE_ALRT_N": 47, "PGOOD_N": 48
+  },
+  "reserved_gpio": [0, 2, 3, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 45, 46],
+  "i2c": {"frequency_hz": 400000, "gauge_address": 54, "haptic_address": 90},
+  "audio": {"pcm_input_hz": 48000, "pcm_output_hz": 16000, "pdm_clock_hz": 3072000, "bits": 16, "channels": 1, "settle_ms": 50},
+  "timing_ms": {"debounce": 25, "voice_hold": 280, "voice_double": 300, "side_hold": 180, "host_lease": 750},
+  "semantics": "V0.3 mouse + voice; host owns special modes; drawing and recording are mutually exclusive",
+  "electrical_limits": {"rail_v": 3.3, "usb_default_input_ma": 100, "usb_configured_input_ma": 500, "charge_current_target_ma": 350},
+  "status": "engineering input; physical timings and electrical performance unverified"
+}

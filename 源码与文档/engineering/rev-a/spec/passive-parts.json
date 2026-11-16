@@ -1,0 +1,22 @@
+{
+  "resistors": {
+    "10k": "RC0402FR-0710KL", "22": "RC0402FR-0722RL", "68k": "RC0402FR-0768KL",
+    "100k": "RC0402FR-07100KL", "4.7k": "RC0402FR-074K7L", "2.55k": "RC0402FR-072K55L",
+    "3.16k": "RC0402FR-073K16L", "3.01k": "RC0402FR-073K01L", "49.9k": "RC0402FR-0749K9L",
+    "511k": "RC0402FR-07511KL", "91k": "RC0402FR-0791KL", "100": "RC0402FR-07100RL",
+    "33": "RC0402FR-0733RL", "1k": "RC0402FR-071KL", "680": "RC0402FR-07680RL"
+  },
+  "capacitors": {
+    "100nF 10V": {"mpn":"GRM155R71A104KA01D","manufacturer":"Murata","dielectric":"X7R","tolerance":"10%"},
+    "1uF 25V": {"mpn":"C1005X5R1E105K050BC","manufacturer":"TDK","dielectric":"X5R","tolerance":"10%"},
+    "4.7uF 10V": {"mpn":"GRM188R61A475KE15D","manufacturer":"Murata","dielectric":"X5R","tolerance":"10%"},
+    "10uF 6.3V": {"mpn":"GRM188R60J106ME84D","manufacturer":"Murata","dielectric":"X5R","tolerance":"20%"},
+    "22uF 6.3V": {"mpn":"GRM188R60J226MEA0D","manufacturer":"Murata","dielectric":"X5R","tolerance":"20%"}
+  },
+  "verification": "Electrical values and packages matched to design. Stock, lifecycle and packaging must be reconfirmed for the purchasing date; no purchase performed.",
+  "sources": [
+    "https://product.tdk.com/en/search/capacitor/ceramic/mlcc/info?part_no=C1005X5R1E105K050BC",
+    "https://www.ti.com/lit/ds/symlink/tps63802.pdf",
+    "https://www.murata.com/-/media/webrenewal/products/connectivitymodule/asset/pub/rfm/data/type2nr/type2nr-evk-bom.ashx?cvid=20250616013939000000&la=en-sg"
+  ]
+}

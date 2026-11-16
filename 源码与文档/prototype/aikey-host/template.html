@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI KEY 实机上位机</title>
+<style>/*__STYLE__*/</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><b>AI KEY</b><span>实机上位机 · E24</span></div>
+  <div class="links">
+    <button id="connHid" class="primary" type="button">连接手柄</button>
+    <button id="connTel" type="button">连接遥测串口</button>
+    <button id="useSim" type="button">虚拟手柄</button>
+    <a id="toIsland" class="ghost" href="AI键盘-灵动岛POC演示.html">灵动岛演示 →</a>
+  </div>
+</header>
+<p class="banner" id="banner">插上 AI KEY 后点「连接手柄」。普通鼠标模式下也能调参，系统光标不受影响。</p>
+
+<main class="grid">
+  <section class="card benchcard" aria-labelledby="benchTitle">
+    <div class="head">
+      <h2 id="benchTitle">逐项测试</h2>
+      <span class="readout mono" id="benchScore">0 / 9 通过</span>
+      <label class="board">板子<input id="benchBoard" type="text" placeholder="比如 d3:bc" maxlength="24"></label>
+      <button id="benchCopy" type="button">复制结果</button>
+      <button id="benchReset" type="button">全部清空</button>
+    </div>
+    <div class="bench">
+      <ol class="benchlist" id="benchList"></ol>
+      <div class="benchpane">
+        <h3 id="benchName"></h3>
+        <p id="benchHow"></p>
+        <div class="tonebox" id="toneBox" hidden>
+          <label class="check"><input type="checkbox" id="spkOk">扬声器已接好，确认可以出声</label>
+          <div class="toneset">
+            <label>频率 Hz<input id="toneHz" type="number" min="200" max="4000" step="100" value="1000"></label>
+            <label>时长 ms<input id="toneMs" type="number" min="10" max="1000" step="50" value="200"></label>
+            <label>衰减 dB<input id="toneAtten" type="number" min="30" max="80" step="1" value="50"></label>
+          </div>
+        </div>
+        <p class="benchsay" id="benchSay" role="status"></p>
+        <div class="benchkeys" id="benchKeys" hidden></div>
+        <div class="meter" id="benchMeter" hidden><i id="benchLevel"></i></div>
+        <p class="benchres" id="benchRes"></p>
+        <audio id="benchAudio" controls hidden></audio>
+        <div class="row" id="benchAsk" hidden></div>
+        <div class="row">
+          <button id="benchRun" class="primary" type="button">开始</button>
+          <button id="benchStop" type="button" hidden>中止</button>
+          <button id="benchSkip" type="button">跳过</button>
+          <button id="benchNext" type="button">下一项</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="col">
+    <div class="card">
+      <h2>设备</h2>
+      <dl class="kv">
+        <dt>连接</dt><dd id="kvLink">未连接</dd>
+        <dt>Session</dt><dd id="kvSession" class="mono">—</dd>
+        <dt>归属</dt><dd id="kvOwner">—</dd>
+        <dt>陀螺仪</dt><dd id="kvCal">—</dd>
+        <dt>遥测</dt><dd id="kvTel">未连接</dd>
+      </dl>
+      <div class="chips" id="faults"></div>
+      <div class="row">
+        <button id="recal" type="button" disabled>重新校准</button>
+        <button id="wizardOpen" type="button" disabled>轴向向导</button>
+      </div>
+      <p class="hint" id="calHint" hidden>把手柄放稳 1 秒，校准完成后才会出光标。</p>
+    </div>
+    <div class="card">
+      <h2>按键</h2>
+      <div class="keys" id="keys">
+        <button data-k="L" type="button" disabled>L<small>确认</small></button>
+        <button data-k="R" type="button" disabled>R<small>返回</small></button>
+        <button data-k="V" type="button" disabled>V<small>背键</small></button>
+        <button data-k="S" type="button" disabled>S<small>背键</small></button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>维护</h2>
+      <p class="hint">重启进 ROM 下载模式，用于再次烧录。不行就按住 BOOT 点一下复位。</p>
+      <button id="dfu" type="button" disabled>进下载模式</button>
+    </div>
+  </section>
+
+  <section class="col wide">
+    <div class="card">
+      <div class="head"><h2>角速度</h2><span class="legend"><i class="c1"></i>水平 h <i class="c2"></i>竖直 v</span><span class="readout mono" id="rate">— Hz</span></div>
+      <canvas id="chart" width="720" height="190"></canvas>
+      <dl class="stats mono">
+        <div><dt>零偏 °/s</dt><dd id="stBias">—</dd></div>
+        <div><dt>静止</dt><dd id="stStill">—</dd></div>
+        <div><dt>丢弃行</dt><dd id="stDrop">0</dd></div>
+      </dl>
+    </div>
+    <div class="card">
+      <div class="head"><h2>试手板</h2><span class="hint inline" id="boardHint">普通鼠标模式：系统光标划过这里留下轨迹。</span>
+        <button id="host" type="button" disabled>接管指针</button>
+        <button id="recenter" type="button" disabled>居中</button>
+      </div>
+      <canvas id="board" width="720" height="240"></canvas>
+    </div>
+  </section>
+
+  <section class="col">
+    <div class="card">
+      <div class="head"><h2>指向参数</h2><span class="dirty" id="dirty" hidden>未保存</span></div>
+      <div id="sliders"></div>
+      <div class="toggles">
+        <label><input type="checkbox" id="invertX" disabled>左右反向</label>
+        <label><input type="checkbox" id="invertY" disabled>上下反向</label>
+        <label><input type="checkbox" id="gravity" disabled>重力补偿</label>
+      </div>
+      <p class="axes mono" id="axes">轴映射 —</p>
+      <p class="err" id="cfgErr" hidden></p>
+      <div class="row">
+        <button id="save" class="primary" type="button" disabled>保存到手柄</button>
+        <button id="reload" type="button" disabled>重读</button>
+        <button id="defaults" type="button" disabled>恢复默认</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card logcard">
+    <div class="head"><h2>日志</h2><span class="hint inline">设备串口文字只显示，不执行</span></div>
+    <div class="log mono" id="log" role="log"></div>
+  </section>
+</main>
+
+<div class="modal" id="wizard" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="wzTitle">
+    <ol class="steps" id="wzSteps"></ol>
+    <h3 id="wzTitle"></h3>
+    <p id="wzBody"></p>
+    <ul class="notes" id="wzNotes"></ul>
+    <div class="row">
+      <button id="wzGo" class="primary" type="button"></button>
+      <button id="wzCancel" type="button">关闭</button>
+    </div>
+  </div>
+</div>
+<script>/*__SCRIPT__*/</script>
+</body>
+</html>

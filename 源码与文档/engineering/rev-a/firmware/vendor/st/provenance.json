@@ -1,0 +1,23 @@
+{
+  "commit": "2808e5cd6b85f91b66758e1dd0faab5f043aba07",
+  "files": [
+    {
+      "file": "lsm6dsv16x_reg.c",
+      "sha256": "cd2684780702d544e1c32a5fbac4698ae56a15c3f7db4d2786b5d9a1f22b82a6",
+      "bytes": 207367,
+      "source": "https://raw.githubusercontent.com/STMicroelectronics/lsm6dsv16x-pid/2808e5cd6b85f91b66758e1dd0faab5f043aba07/lsm6dsv16x_reg.c"
+    },
+    {
+      "file": "lsm6dsv16x_reg.h",
+      "sha256": "6c0965c7acc93e00c7e9a60ab67af1d5eefd6cca255c2d0557cf0141086da591",
+      "bytes": 289216,
+      "source": "https://raw.githubusercontent.com/STMicroelectronics/lsm6dsv16x-pid/2808e5cd6b85f91b66758e1dd0faab5f043aba07/lsm6dsv16x_reg.h"
+    },
+    {
+      "file": "LICENSE",
+      "sha256": "b54f36a43cf9b8f6292c8f0f3b4c267ebd59859587e0152c94305bc81dda68bc",
+      "bytes": 1518,
+      "source": "https://raw.githubusercontent.com/STMicroelectronics/lsm6dsv16x-pid/2808e5cd6b85f91b66758e1dd0faab5f043aba07/LICENSE"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+﻿GPIO或信号,U1物理引脚,网络名,主控方向或用途,电平与约束
+EN,3,MCU_EN,复位专用,SW7，按下复位，10kΩ 与 1µF RC
+GPIO4,4,I2S_BCLK,输出,共享音频位时钟，初始化保持低
+GPIO5,5,I2S_WS,输出,共享帧时钟，初始化保持低
+GPIO6,6,MIC_DOUT,输入,麦克风数据，外部 100kΩ 下拉
+GPIO7,7,SPK_DIN,输出,功放数据，未播放时发送零
+GPIO8,12,I2C_SDA,双向开漏,外部 4.7kΩ 上拉到 3V3
+GPIO19,13,USB_D_MINUS,USB 专用,原生 USB D−，不作普通 GPIO
+GPIO20,14,USB_D_PLUS,USB 专用,原生 USB D+，不作普通 GPIO
+GPIO9,17,I2C_SCL,开漏时钟,外部 4.7kΩ 上拉到 3V3
+GPIO10,18,IMU_INT,输入,BMI270 INT1，先配置输出类型再开中断
+GPIO11,19,CHG_INT,输入,BQ25180 /INT，低有效，外部 10kΩ 上拉
+GPIO12,20,KEY_LEFT,输入,SW1，按下低，外部 10kΩ 上拉
+GPIO13,21,KEY_RIGHT,输入,SW2，按下低，外部 10kΩ 上拉
+GPIO14,22,KEY_VOICE,输入,SW3，按下低，外部 10kΩ 上拉
+GPIO21,23,KEY_DRAW,输入,SW4，按下低，外部 10kΩ 上拉
+GPIO0,27,BOOT_N,启动专用,SW6，按下低，外部 10kΩ 上拉

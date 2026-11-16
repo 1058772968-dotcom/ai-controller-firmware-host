@@ -1,0 +1,52 @@
+[
+  {
+    "path": "/Users/linxiansheng/Library/Mobile Documents/com~apple~CloudDocs/键盘/00-交付说明.md",
+    "bytes": 9793,
+    "sha256": "4865f3e90dff8aa3b18654ee70c9d7016aa0180d677b1b50227e4b098fad8e45"
+  },
+  {
+    "path": "/Users/linxiansheng/Library/Mobile Documents/com~apple~CloudDocs/键盘/prototype/mouse-voice/README.md",
+    "bytes": 7842,
+    "sha256": "a30915f16befde3b010a895502951e97c2f1fcb09605d032b7bef4255b919ff5"
+  },
+  {
+    "path": "/Users/linxiansheng/Library/Mobile Documents/com~apple~CloudDocs/键盘/prototype/mouse-voice/interaction.js",
+    "bytes": 5633,
+    "sha256": "553ce6269ddd4f6a248b9bda9331a812ded94da53cf439aa8b08c67b45deaef8"
+  },
+  {
+    "path": "/Users/linxiansheng/Library/Mobile Documents/com~apple~CloudDocs/键盘/prototype/src/reference-product.js",
+    "bytes": 26833,
+    "sha256": "215d6a7dac90f193fedf4eefadeb48c83ae8cdcff8c0a3eb6e49bfbbce2d90f9"
+  },
+  {
+    "path": "/Users/linxiansheng/Library/Mobile Documents/com~apple~CloudDocs/键盘/prototype/src/internal-stack.js",
+    "bytes": 32261,
+    "sha256": "29642463ffe54df34df16b5ab45bc775a9987145d4a549e51a379c0190bdf3ed"
+  },
+  {
+    "path": "/Users/linxiansheng/Library/Mobile Documents/com~apple~CloudDocs/键盘/hardware/src/data.js",
+    "bytes": 25278,
+    "sha256": "de4a977d664bcc5cd7b8eeaa9d3dccb2cc38d4fb719c2d282a63c780c6a2abe9"
+  },
+  {
+    "path": "/Users/linxiansheng/Library/Mobile Documents/com~apple~CloudDocs/键盘/docs/结构堆叠-CMF-制造约束.md",
+    "bytes": 12787,
+    "sha256": "4f85c974284445e4bad338ca5e30be188d07ccd6de970fb4ee18f4bd5c86e79c"
+  },
+  {
+    "path": "/Users/linxiansheng/Library/Mobile Documents/com~apple~CloudDocs/键盘/docs/engineering/05-接口与待定项.md",
+    "bytes": 5520,
+    "sha256": "4d2075980c8b358628f01048b493e96313bb1312d79b51183df283391aff8a07"
+  },
+  {
+    "path": "/Users/linxiansheng/Library/Mobile Documents/com~apple~CloudDocs/键盘/docs/软硬件交互图-2026-09-16/README.md",
+    "bytes": 8701,
+    "sha256": "50e1e4c39d9eab37f11291fe7501caf4b9630e6c5ebb33a6ea9d476ecfd1d698"
+  },
+  {
+    "path": "/Users/linxiansheng/Library/Mobile Documents/com~apple~CloudDocs/键盘/reference/selected-ID01-six-views.png",
+    "bytes": 1876368,
+    "sha256": "e96fefb0e760a480fffce59870bf0b17ef144a2e827cee1d1376fcb4ea91af3f"
+  }
+]

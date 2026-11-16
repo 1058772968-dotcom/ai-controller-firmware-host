@@ -1,0 +1,4 @@
+# 麦克风 POC 档：联调档 + 主机开流即放行麦克风（放宽规格 AUD 02），只烧台架板，不用于交付
+CONFIG_E24_PROFILE_LINK=y
+CONFIG_ESP_CONSOLE_NONE=y
+CONFIG_E24_MIC_POC_OPEN=y
