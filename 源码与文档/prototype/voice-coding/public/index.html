@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>呆毛语音 Coding</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="spark">◍</span>
+    <strong>呆毛语音 Coding</strong>
+    <span class="ver" id="ver">v—</span>
+  </div>
+  <div class="pills">
+    <span class="pill" id="pill-key" title="ASR 密钥来源">密钥 —</span>
+    <span class="pill" id="pill-mic" title="当前麦克风">麦克风 —</span>
+    <span class="pill" id="pill-perm" title="辅助功能 / 自动化权限">权限 未检查</span>
+    <span class="pill" id="pill-mode" title="是否演练">投递 未知</span>
+  </div>
+  <button class="ghost" id="btn-settings">设置</button>
+</header>
+
+<main class="grid">
+  <aside class="panel agents">
+    <div class="panel-head">
+      <h2>目标 Agent</h2>
+      <button class="mini" id="btn-add-agent">＋</button>
+    </div>
+    <div id="agent-list" class="agent-list"></div>
+    <p class="hint">点一张卡选定目标。说话开头带上「Claude，」「Cursor，」这类前缀会自动改目标。</p>
+  </aside>
+
+  <section class="panel talk">
+    <div class="target">
+      <span>发给</span>
+      <b id="target-name">—</b>
+      <span class="target-note" id="target-note"></span>
+    </div>
+
+    <div class="connect-banner" id="connect-banner">
+      <span>手柄还没连上：按板子上的键不会有反应。</span>
+      <button class="mini primary" id="btn-connect-banner">现在连接手柄</button>
+    </div>
+
+    <div class="controller" id="controller">
+      <div class="controller-head">
+        <span class="pill" id="pill-controller">手柄 未连接</span>
+        <button class="mini" id="btn-controller-connect">连接手柄</button>
+        <button class="mini ghost" id="btn-controller-claim" hidden title="固件要求 HOST 才放行麦克风时用；接管期间手柄暂时当不了鼠标">接管出声</button>
+        <button class="mini ghost" id="btn-controller-release" hidden>交还指针</button>
+        <button class="mini ghost" id="btn-controller-disconnect" hidden>断开</button>
+      </div>
+      <div class="controller-keys">
+        <span><b>V</b> 按住录音 · 松开结束</span>
+        <span><b>L</b> 填入并发送</span>
+        <span><b>R</b> 清空</span>
+        <span class="key-live" id="key-live">按键：还没收到的按动</span>
+        <button class="mini ghost" id="btn-mic-test">试试麦克风</button>
+        <button class="mini ghost" id="btn-hid-probe" hidden>HID 自检</button>
+        <button class="mini ghost" id="btn-controller-reset" title="写通道卡死时用：等于拔插一次手柄">重置手柄</button>
+      </div>
+      <div class="hint" id="controller-hint">点「连接手柄」并选中 AI KEY：只听按键，鼠标照常可用。按住 V 录音、松开识别。</div>
+    </div>
+
+    <button id="ptt" class="ptt">
+      <span class="ptt-main">按住说话</span>
+      <span class="ptt-key">V</span>
+    </button>
+    <div class="meter"><div class="meter-fill" id="meter-fill"></div></div>
+    <div class="phase" id="phase">待机 · 按住 V 或上面的按钮</div>
+
+    <textarea id="transcript" rows="6" placeholder="识别结果会出现在这里，可以先改再发。⌘↵ 直接发送。"></textarea>
+
+    <div class="actions">
+      <button id="btn-retry" disabled>重新识别</button>
+      <button id="btn-fill" disabled>只填入</button>
+      <button id="btn-send" class="primary" disabled>填入并发送</button>
+      <button id="btn-clear" class="ghost" disabled>清空</button>
+    </div>
+
+    <div class="toggles">
+      <label><input type="checkbox" id="chk-auto" /> 自动监听（不用一直按键，像手柄按住 V 那样开闸就识别）</label>
+      <label class="range">灵敏度
+        <input type="range" id="rng-threshold" min="1" max="60" step="1" value="12" />
+        <span id="threshold-val">0.012</span>
+      </label>
+      <label><input type="checkbox" id="chk-autosend" /> 识别完自动发送（默认关：先看清再发）</label>
+    </div>
+  </section>
+
+  <aside class="panel logbox">
+    <div class="panel-head">
+      <h2>日志</h2>
+      <button class="mini" id="btn-clear-log" title="只清显示，不删文件">⌫</button>
+    </div>
+    <div id="log" class="log"></div>
+  </aside>
+</main>
+
+<aside class="drawer" id="drawer" hidden>
+  <div class="drawer-inner">
+    <div class="drawer-head">
+      <h2>设置</h2>
+      <button class="ghost" id="btn-drawer-close">关闭</button>
+    </div>
+
+    <section class="group">
+      <h3>语音转文字</h3>
+      <div class="fields">
+        <label>模型 <input id="in-model" /></label>
+        <label>语言 <input id="in-language" placeholder="zh" /></label>
+      </div>
+      <label class="wide">热词（逗号分隔，专有名词识别更准）
+        <input id="in-hotwords" />
+      </label>
+      <div class="key-row">
+        <span>密钥：<b id="key-hint">—</b></span>
+        <input id="in-key" type="password" placeholder="粘贴新的 ASR 密钥" autocomplete="off" />
+        <button id="btn-save-key">存进钥匙串</button>
+      </div>
+      <p class="hint">密钥只存 macOS 钥匙串（voice-coding-bailian），不写进配置、不进日志。</p>
+    </section>
+
+    <section class="group">
+      <h3>麦克风（只认板子上的那颗）</h3>
+      <div class="fields">
+        <label class="wide">输入设备
+          <select id="sel-mic"></select>
+        </label>
+      </div>
+      <label class="wide">板载麦克风名称（逗号分隔，按设备名认）
+        <input id="in-board-mics" />
+      </label>
+      <label><input type="checkbox" id="chk-require-board" /> 只允许板载麦克风（默认开：没有板子就不录音，绝不退回电脑 / 手机麦克风）</label>
+      <button id="btn-refresh-mic">重新读取设备</button>
+      <p class="hint" id="mic-hint">板子的麦克风在系统里叫 Held-key microphone（POC 档叫 AI KEY Mic POC）；联调档固件按住手柄 V 才会放行声音。</p>
+    </section>
+
+    <section class="group">
+      <h3>行为</h3>
+      <label><input type="checkbox" id="chk-prefix" /> 语音前缀路由（说「Cursor，……」，自动换目标并去掉前缀）</label>
+      <label><input type="checkbox" id="chk-dryrun" /> 演练模式（只算步骤，真不动键盘）</label>
+      <div class="fields">
+        <label>切换应用后等待（毫秒）<input id="in-settle" type="number" min="0" max="3000" /></label>
+        <label>粘贴后到回车（毫秒）<input id="in-paste-delay" type="number" min="0" max="3000" /></label>
+      </div>
+      <div class="row">
+        <button id="btn-save-settings" class="primary">保存设置</button>
+        <button id="btn-perm">检查辅助功能权限</button>
+      </div>
+    </section>
+
+    <section class="group">
+      <h3>Agent</h3>
+      <p class="hint">应用留空 = 跟着前台走，不切应用。终端命令填了就会先开一个新终端窗口跑它。</p>
+      <div id="agent-editor" class="agent-editor"></div>
+      <div class="row">
+        <button id="btn-save-agents" class="primary">保存 Agent</button>
+        <button id="btn-add-agent-2">＋ 添加一个</button>
+      </div>
+    </section>
+  </div>
+</aside>
+
+<div id="toast" class="toast" hidden></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

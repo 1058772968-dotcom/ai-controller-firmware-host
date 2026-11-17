@@ -1,0 +1,15 @@
+{
+  "name": "voice-coding",
+  "private": true,
+  "type": "module",
+  "version": "0.2.0",
+  "description": "电脑端 APP：手柄语音 → 文字 → 填入对应 Agent 并发送",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test tests/",
+    "selftest": "node tools/selftest.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
