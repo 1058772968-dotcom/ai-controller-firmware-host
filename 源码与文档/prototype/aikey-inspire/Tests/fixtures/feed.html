@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>灵感圈测试页 · 信息流</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", sans-serif; margin: 0; background: #f6f6f6; color: #222; }
+  header { height: 56px; display: flex; align-items: center; gap: 16px; padding: 0 20px; background: #fff; border-bottom: 1px solid #eee; }
+  header a { color: #333; text-decoration: none; }
+  .layout { display: flex; }
+  nav.side { width: 150px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+  nav.side a { display: block; height: 36px; line-height: 36px; padding-left: 10px; color: #333; text-decoration: none; }
+  .feeds-container { flex: 1; display: grid; grid-template-columns: repeat(4, 230px); gap: 16px; padding: 16px; }
+  section.note-item { width: 230px; background: #fff; border-radius: 10px; overflow: hidden; }
+  section.note-item a.cover { display: block; }
+  section.note-item img.cover-img { width: 230px; height: 260px; display: block; }
+  section.note-item .footer { padding: 8px 10px 10px; }
+  section.note-item a.title { display: block; color: #222; text-decoration: none; font-size: 14px; line-height: 20px; }
+  section.note-item .author { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 12px; color: #666; }
+  section.note-item .author img { width: 18px; height: 18px; border-radius: 9px; }
+  .ad-tag { font-size: 11px; color: #999; }
+  .mask { position: fixed; inset: 0; background: rgba(0,0,0,.45); }
+  .login-modal { position: fixed; left: 50%; top: 160px; width: 400px; margin-left: -200px; background: #fff; border-radius: 14px; padding: 28px 24px; }
+  .login-modal h2 { margin: 0 0 8px; font-size: 18px; }
+  .login-modal .row { display: flex; gap: 12px; margin-top: 24px; }
+  .login-modal button.primary { flex: 1; height: 40px; border: 0; border-radius: 20px; background: #ff2442; color: #fff; font-size: 15px; }
+  .login-modal a.later { line-height: 40px; color: #666; cursor: pointer; }
+  .login-modal .close-button { position: absolute; right: 12px; top: 12px; width: 28px; height: 28px; border: 0; background: #f2f2f2; border-radius: 14px; cursor: pointer; }
+  #status { position: fixed; right: 12px; bottom: 12px; background: #fff; padding: 6px 10px; border-radius: 6px; font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <strong>测试站</strong><a href="#">发现</a><a href="#">直播</a><a href="#">发布</a>
+  <button id="reopen" onclick="openModal()">重新弹出登录框</button>
+</header>
+<div class="layout">
+  <nav class="side">
+    <a href="#">发现</a><a href="#">发布</a><a href="#">通知</a><a href="#">我</a>
+  </nav>
+  <div class="feeds-container" id="feed"></div>
+</div>
+<div id="modal-root"></div>
+<div id="status">登录框：显示中</div>
+<script>
+  // 卡片：标题、作者、封面颜色；第 3 张是推广
+  const cards = [
+    ["奶油风客厅配色｜米白 + 原木，越看越舒服", "小林的家", "#e9dcc9"],
+    ["极简风 PPT 排版：封面这样做更高级", "设计课代表", "#d7e3f4"],
+    ["广告 · 新款云朵沙发限时 5 折", "某某家居旗舰店", "#f4d7d7"],
+    ["奶油风卧室墙面怎么选色？三套方案对比", "阿花装修记", "#efe6d6"],
+    ["周末露营装备清单", "户外老王", "#d9ecd9"],
+    ["手机摄影：逆光人像构图技巧", "光影小记", "#e4e4e4"],
+    ["奶油风小户型厨房改造前后对比", "住进小房子", "#f1e7d8"],
+    ["Python 自动化办公入门", "程序员小张", "#dfe7ee"],
+  ];
+  const svg = c => "data:image/svg+xml;utf8," + encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='230' height='260'><rect width='230' height='260' fill='${c}'/></svg>`);
+  const feed = document.getElementById("feed");
+  cards.forEach(([title, author, color], i) => {
+    const s = document.createElement("section");
+    s.className = "note-item";
+    s.innerHTML = `
+      <a class="cover" href="#note-${i}"><img class="cover-img" src="${svg(color)}" alt="封面：${title}"></a>
+      <div class="footer">
+        <a class="title" href="#note-${i}">${title}</a>
+        <div class="author"><img src="${svg('#bbb')}" alt=""><span>${author}</span>${i === 2 ? '<span class="ad-tag">广告</span>' : ''}</div>
+      </div>`;
+    feed.appendChild(s);
+  });
+
+  function openModal() {
+    document.getElementById("modal-root").innerHTML = `
+      <div class="mask"></div>
+      <div class="login-modal" role="dialog" aria-modal="true" aria-label="登录">
+        <button class="close-button" onclick="closeModal('×')"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M1 1l10 10M11 1L1 11" stroke="#666" stroke-width="1.6"/></svg></button>
+        <h2>登录后查看更多精彩内容</h2>
+        <div>扫码或手机号登录，同步你的收藏和关注</div>
+        <div class="row">
+          <button class="primary" onclick="document.getElementById('status').textContent='误按了登录！'">登录</button>
+          <a class="later" role="button" onclick="closeModal('暂不登录')">暂不登录</a>
+        </div>
+      </div>`;
+    document.getElementById("status").textContent = "登录框：显示中";
+  }
+  function closeModal(by) {
+    document.getElementById("modal-root").innerHTML = "";
+    document.getElementById("status").textContent = "登录框：已被“" + by + "”关闭";
+  }
+  if (!location.search.includes("modal=0")) openModal();
+</script>
+</body>
+</html>

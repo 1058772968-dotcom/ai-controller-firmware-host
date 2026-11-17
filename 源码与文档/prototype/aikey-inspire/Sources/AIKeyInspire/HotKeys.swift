@@ -8,9 +8,12 @@ final class HotKeys {
 
     enum ID: UInt32 {
         case predict = 1, circle, library, clickPredicted, debug, escape
+        case search, flipNext, flipPrev, like, collect, coin, follow, undo
+        case targetMode, nextCard, closePopup, pack
     }
 
     private var handlers: [UInt32: () -> Void] = [:]
+    private var releaseHandlers: [UInt32: () -> Void] = [:]
     private var refs: [UInt32: EventHotKeyRef] = [:]
     private var installed = false
 
@@ -31,21 +34,28 @@ final class HotKeys {
         if let r = refs[id.rawValue] { UnregisterEventHotKey(r) }
         refs[id.rawValue] = nil
         handlers[id.rawValue] = nil
+        releaseHandlers[id.rawValue] = nil
     }
 
+    /// 松开快捷键时调用（按住连续翻页用）
+    func onRelease(_ id: ID, _ handler: @escaping () -> Void) { releaseHandlers[id.rawValue] = handler }
+
     fileprivate func fire(_ id: UInt32) { handlers[id]?() }
+    fileprivate func fireRelease(_ id: UInt32) { releaseHandlers[id]?() }
 
     private func install() {
         guard !installed else { return }
         installed = true
-        var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
+        var specs = [EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed)),
+                     EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyReleased))]
         InstallEventHandler(GetApplicationEventTarget(), { _, event, _ -> OSStatus in
             var hk = EventHotKeyID()
             GetEventParameter(event, EventParamName(kEventParamDirectObject), EventParamType(typeEventHotKeyID),
                               nil, MemoryLayout<EventHotKeyID>.size, nil, &hk)
             let id = hk.id
-            DispatchQueue.main.async { HotKeys.shared.fire(id) }
+            let released = GetEventKind(event) == UInt32(kEventHotKeyReleased)
+            DispatchQueue.main.async { released ? HotKeys.shared.fireRelease(id) : HotKeys.shared.fire(id) }
             return noErr
-        }, 1, &spec, nil, nil)
+        }, 2, &specs, nil, nil)
     }
 }

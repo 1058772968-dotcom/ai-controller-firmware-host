@@ -189,7 +189,7 @@ public final class AXProbe {
     /// 指针所在的软件、窗口标题和网页地址
     public func context(at p: CGPoint) -> ScreenContext {
         var ctx = ScreenContext()
-        guard let hit = AX.hit(system, p) else { return ctx }
+        guard let hit = AX.hitPatient(system, p) else { return ctx }
         if let pid = AX.pid(hit), let app = NSRunningApplication(processIdentifier: pid) {
             ctx.appName = app.localizedName
             ctx.bundleId = app.bundleIdentifier

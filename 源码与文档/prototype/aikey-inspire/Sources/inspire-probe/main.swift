@@ -6,6 +6,13 @@
 //   inspire-probe texts x y w h       区域内看得到的文字
 //   inspire-probe jev [x y]           真发一次 Jev 请求（需要钥匙串或环境变量里有 Key）
 //   inspire-probe demo                四个人造场景发给 Jev，看格式、延迟和大致行为
+//   inspire-probe search "文字" [当前网址]   快速搜索的去向和网址（不打开）
+//   inspire-probe actions like|collect|coin|follow   找指针所在页面的互动按钮（不点）
+//   inspire-probe flipfind [next|prev]  找指针下图集的翻页按钮（不点）
+//   inspire-probe cards                 指针所在网页的信息流卡片（B2 目标模式会标的那些；GOAL=… 时附模拟相关度）
+//   inspire-probe popup                 指针所在网页的弹窗和关闭按钮（B7，不点）
+//   inspire-probe browse <网址片段>      在测试页上跑卡片和弹窗查找；PRESS=1 时只在测试页上真按关闭并回读
+//   inspire-probe demo2                 人造的整理 / 召回 / 卡片 / 关闭弹窗请求发给 Jev，看格式、延迟和 token
 import AppKit
 import InspireCore
 
@@ -30,6 +37,33 @@ func printScan(_ s: AXProbe.Scan, at p: CGPoint, motion: PointerMotion? = nil) -
     }
     let m = motion ?? PointerMotion(x: Double(p.x), y: Double(p.y), dx: 0, dy: 0, speed: 0, text: "barely moved in the last 0.5 s before stopping")
     return ClickSnapshot(context: s.context, pointer: m, candidates: s.candidates, userGoal: ProcessInfo.processInfo.environment["GOAL"])
+}
+
+
+func printCards(_ cards: [PageCard], goal: String?) {
+    let mock = goal.map { CardQuestions.mock(goal: $0, cards: cards) } ?? [:]
+    for (i, c) in cards.enumerated() {
+        let j = mock[i].map { String(format: "  模拟：%@ %.1f", $0.label, $0.score) } ?? ""
+        print(String(format: "  %@ %4.0f,%4.0f %3.0f×%3.0f %@ “%@”%@", c.id, c.frame.minX, c.frame.minY, c.frame.width, c.frame.height,
+                     c.hasImage ? "图" : "文", c.text, j))
+    }
+}
+
+func printPopup(_ s: PopupScan) {
+    print("弹窗 \(s.dialogs.count) 个\(s.dialogs.first.map { "，第一个 \($0)" } ?? "")\(s.dialogText.isEmpty ? "" : "：“\(s.dialogText)”")")
+    for c in s.candidates {
+        print(String(format: "  %@ %-10@ %-10@ %@ “%@” [%@] %@", c.id, c.kind.rawValue as NSString, c.role as NSString,
+                     c.inDialog ? "弹窗内" : "弹窗外", c.label, c.classes, "\(c.frame)"))
+    }
+    print("没有 Key 时会选：\(CloseQuestions.mock(s))")
+}
+
+func snapshotAtPointer() -> (WebRoot.Found, PageNode, CGRect, Int, Double)? {
+    let t0 = CFAbsoluteTimeGetCurrent()
+    guard let web = WebRoot.locate(near: ScreenGeometry.mouseAX()) else { return nil }
+    let vp = WebRoot.viewport(web)
+    let snap = PageSnapshot.take(web.root, clip: vp)
+    return (web, snap.root, vp, snap.nodes, (CFAbsoluteTimeGetCurrent() - t0) * 1000)
 }
 
 guard AX.trusted else {
@@ -185,6 +219,116 @@ case "demo":
         sem.wait()
     }
     print("命中 \(hits)/\(cases.count)（人造场景，只说明请求格式和大致行为，不是命中率）")
+
+case "search":
+    // 只打印去向和网址，不打开
+    let text = args.count >= 2 ? args[1] : ""
+    let url = args.count >= 3 ? args[2] : nil
+    let plan = QuickSearch.plan(input: text, currentURL: url)
+    print("去向：\(plan.destination.name)（\(plan.reason)）")
+    print("搜索词：\(plan.query)")
+    print("网址：\(plan.url?.absoluteString ?? "—")")
+
+case "actions":
+    // 只找按钮、不点：inspire-probe actions like|collect|coin|follow
+    let a = QuickAction(rawValue: args.count >= 2 ? args[1] : "like") ?? .like
+    let p = point(args.dropFirst(2))
+    let r = PageScanner.findActionButtons(a, near: p)
+    print("“\(a.zh)”：从\(r.root)开始看了 \(r.nodes) 个元素，\(String(format: "%.0f", r.elapsedMs)) ms\(r.truncated ? "（到上限截断）" : "")")
+    print("上下文：\(r.context.summary)")
+    for c in r.candidates {
+        print(String(format: "  %@ %-12@ %6.0f px %@%@ “%@” [%@]", c.id, c.role as NSString, c.distance,
+                     c.inComment ? "评论区 " : "", c.alreadyDone == true ? "已做 " : "", c.label, c.classes))
+    }
+    print("没有 Key 时会选：\(ActionQuestions.mock(r.candidates))")
+
+case "flipfind":
+    let d: FlipDirection = (args.count >= 2 && args[1] == "prev") ? .prev : .next
+    let r = ImageNav.findButton(d, near: point(args.dropFirst(2)))
+    print("容器：\(r.container)，看了 \(r.nodes) 个元素")
+    if let b = r.button { print("找到按钮：“\(b.label)” \(b.frame)") } else { print("没找到按钮 → 会发方向键") }
+
+case "fixture":
+    // 在测试页上验证查找逻辑：inspire-probe fixture <网址片段>。直接从网页节点开始，不做命中测试
+    let needle = args.count >= 2 ? args[1] : "127.0.0.1:8897"
+    guard let (web, appName, f) = WebAreaLocator.find(urlContains: needle) else { print("没找到网址含“\(needle)”的网页"); exit(4) }
+    let origin = f?.origin ?? .zero
+    print("网页在 \(appName)，位置 \(f.map { "\($0)" } ?? "未知")")
+    let pointer = CGPoint(x: origin.x + 650, y: origin.y + 190)   // 测试页互动栏附近
+    let ctx = ScreenContext(appName: appName, windowTitle: AX.string(web, "AXTitle"), url: AX.url(web))
+    for a in QuickAction.allCases {
+        let r = PageScanner.findActionButtons(a, root: web, rootName: "测试页", near: pointer, context: ctx)
+        print("“\(a.zh)”：\(r.nodes) 个元素 \(String(format: "%.0f", r.elapsedMs)) ms，候选 \(r.candidates.count)，无 Key 时选 \(ActionQuestions.mock(r.candidates))")
+        for c in r.candidates {
+            print(String(format: "    %@ %-12@ %5.0f px %@%@“%@” [%@]", c.id, c.role as NSString, c.distance,
+                         c.inComment ? "评论区 " : "", c.alreadyDone == true ? "已做 " : "", c.label, c.classes))
+        }
+    }
+    for d in [FlipDirection.next, .prev] {
+        let r = ImageNav.findButton(d, in: web, near: CGPoint(x: origin.x + 280, y: origin.y + 280))
+        print("翻页 \(d.rawValue)：\(r.button.map { "按钮“\($0.label)” \($0.frame)" } ?? "没找到")，看了 \(r.nodes) 个元素")
+    }
+    // PRESS=1：只在测试页上真的按一下（下一张 ×2、主内容点赞），验证 AXPress 能触发网页点击
+    if ProcessInfo.processInfo.environment["PRESS"] == "1", needle.contains("8897") || needle.contains("fixture") {
+        let pt = CGPoint(x: origin.x + 280, y: origin.y + 280)
+        for _ in 0..<2 {
+            if let b = ImageNav.findButton(.next, in: web, near: pt).button { print("按下一张：\(InputPoster.press(b.element, frame: nil))") }
+            Thread.sleep(forTimeInterval: 0.2)
+        }
+        let r = PageScanner.findActionButtons(.like, root: web, rootName: "测试页", near: pointer, context: ctx)
+        if let c = r.candidates.first(where: { !$0.inComment }), let el = r.elements[c.id] {
+            let before = PageScanner.state(of: el, .like)
+            print("按点赞：\(InputPoster.press(el, frame: nil))")
+            Thread.sleep(forTimeInterval: 0.5)
+            let after = PageScanner.state(of: el, .like)
+            print("点赞前：\(before.label) 已做=\(before.done.map { "\($0)" } ?? "看不出")；点赞后：\(after.label) 已做=\(after.done.map { "\($0)" } ?? "看不出")")
+        }
+    }
+
+case "cards":
+    guard let (web, root, vp, nodes, ms) = snapshotAtPointer() else { print("指针下没有网页"); exit(4) }
+    let cards = CardFinder.find(root, viewport: vp)
+    print("网页：\(web.context.summary)\n可视区 \(vp)，读了 \(nodes) 个元素，\(Int(ms)) ms；卡片 \(cards.count) 张")
+    printCards(cards, goal: ProcessInfo.processInfo.environment["GOAL"])
+
+case "popup":
+    guard let (web, root, vp, nodes, ms) = snapshotAtPointer() else { print("指针下没有网页"); exit(4) }
+    print("网页：\(web.context.summary)，读了 \(nodes) 个元素，\(Int(ms)) ms")
+    printPopup(PopupFinder.find(root, viewport: vp))
+
+case "browse":
+    let needle = args.count >= 2 ? args[1] : "127.0.0.1:8897/feed"
+    guard let (web, appName, f) = WebAreaLocator.find(urlContains: needle) else { print("没找到网址含“\(needle)”的网页"); exit(4) }
+    let vp = (f ?? visibleScreensAX()).intersection(visibleScreensAX())
+    let t0 = CFAbsoluteTimeGetCurrent()
+    let snap = PageSnapshot.take(web, clip: vp)
+    let ms = (CFAbsoluteTimeGetCurrent() - t0) * 1000
+    print("网页在 \(appName)：\(AX.url(web) ?? "")，可视区 \(vp)，读了 \(snap.nodes) 个元素，\(Int(ms)) ms\(snap.truncated ? "（截断）" : "")")
+    let cards = CardFinder.find(snap.root, viewport: vp)
+    print("卡片 \(cards.count) 张：")
+    printCards(cards, goal: ProcessInfo.processInfo.environment["GOAL"] ?? "奶油风配色")
+    let pop = PopupFinder.find(snap.root, viewport: vp)
+    printPopup(pop)
+    // PRESS=1：只在测试页上真的按一下关闭，再回读弹窗还在不在
+    if ProcessInfo.processInfo.environment["PRESS"] == "1", needle.contains("8897") || needle.contains("fixture") {
+        let choice = CloseQuestions.mock(pop)
+        guard let el = pop.elements[choice], let c = pop.candidates.first(where: { $0.id == choice }) else { print("没有可按的关闭按钮"); exit(5) }
+        print("按 \(choice)“\(c.label)”（\(c.kind.rawValue)）：\(InputPoster.press(el, frame: nil))")
+        Thread.sleep(forTimeInterval: 0.6)
+        let after = PopupFinder.find(PageSnapshot.take(web, clip: vp).root, viewport: vp)
+        print("按后：弹窗 \(after.dialogs.count) 个，关闭候选 \(after.candidates.count) 个")
+        // 测试页右下角的状态文字会写是被哪个按钮关掉的（误按“登录”也会写出来）
+        var status = ""
+        PageSnapshot.take(web, clip: visibleScreensAX()).root.walk { n in if n.role == "AXStaticText", n.text.hasPrefix("登录框") || n.text.contains("误按") { status = n.text } }
+        print("页面状态：\(status)")
+    }
+
+case "demo2":
+    guard let (key, src) = KeyStore.load() else { print("没有 Key"); exit(3) }
+    print("Key 来源：\(src)（人造数据，不含真实屏幕和灵感库内容）")
+    let sem = DispatchSemaphore(value: 0)
+    JevSelfTest.run(key: key, output: { print($0) }, done: { sem.signal() })
+    sem.wait()
 
 default:
     print("未知命令：\(cmd)")

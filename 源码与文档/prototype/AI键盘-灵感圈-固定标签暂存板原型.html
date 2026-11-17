@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>固定标签暂存板 · 交互原型</title>
+<style>
+:root {
+  --bg: #e8e6e1; --panel: #fff; --ink: #1f1f1f; --muted: #777; --line: #e3e0db;
+  --ok: #1f9d55; --t0: #e8590c; --t1: #2f6fed; --t2: #1f9d55; --t3: #8b5cf6;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { font: 13px/1.45 -apple-system, "PingFang SC", "Helvetica Neue", sans-serif; color: var(--ink); background: var(--bg); overflow: hidden; }
+button { font: inherit; cursor: pointer; border: 1px solid #d6d3ce; background: #fff; border-radius: 6px; padding: 3px 9px; }
+button:hover { background: #f5f4f2; }
+button.primary { background: #1f1f1f; color: #fff; border-color: #1f1f1f; }
+
+/* 模拟菜单栏：这次找资料的目标、标签方案、暂存状态 */
+.menubar { height: 32px; display: flex; align-items: center; gap: 12px; padding: 0 12px; background: rgba(250,250,250,.95); border-bottom: 1px solid var(--line); font-size: 12px; white-space: nowrap; }
+.menubar b { font-weight: 600; }
+.menubar input { border: 0; border-bottom: 1px dashed #aaa; background: transparent; font: inherit; width: 220px; padding: 1px 2px; }
+.menubar select { font: inherit; }
+.menubar .spacer { flex: 1; }
+.menubar .status { padding: 2px 9px; border-radius: 10px; background: #efeeeb; }
+.menubar .life { color: var(--muted); }
+
+.desk { position: absolute; top: 32px; bottom: 46px; left: 0; right: 0; display: flex; gap: 10px; padding: 10px; }
+
+/* 模拟浏览器 */
+.browser { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--panel); border-radius: 10px; box-shadow: 0 4px 18px rgba(0,0,0,.12); overflow: hidden; position: relative; }
+.tabs { display: flex; gap: 4px; padding: 7px 10px 0; background: #f2f1ef; }
+.tab { padding: 5px 12px; border-radius: 8px 8px 0 0; cursor: pointer; color: #666; }
+.tab.on { background: #fff; color: #000; }
+.addr { padding: 5px 12px; border-bottom: 1px solid var(--line); color: #888; font-size: 12px; }
+.page { flex: 1; overflow: auto; padding: 14px 156px 24px 14px; position: relative; }
+.hidden { display: none !important; }
+.feed { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 12px; }
+.card { border-radius: 10px; overflow: hidden; background: #fff; border: 1px solid #ece9e4; position: relative; outline: 2px solid transparent; outline-offset: 1px; transition: outline-color .1s; }
+.card.hover { outline-color: rgba(47,111,237,.65); }
+.card .cover { height: 140px; display: flex; align-items: flex-end; padding: 8px; color: rgba(255,255,255,.92); font-weight: 700; font-size: 15px; text-shadow: 0 1px 3px rgba(0,0,0,.25); }
+.card .t { padding: 6px 8px 0; }
+.card .a { padding: 2px 8px 8px; color: var(--muted); font-size: 11px; display: flex; justify-content: space-between; }
+.card .in { position: absolute; top: 6px; left: 6px; display: flex; gap: 3px; }
+.card .in span { min-width: 18px; height: 18px; border-radius: 9px; color: #fff; font-size: 11px; display: grid; place-items: center; padding: 0 4px; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+.article { max-width: 620px; }
+.article h1 { font-size: 20px; margin: 4px 0 2px; }
+.article .meta { color: var(--muted); font-size: 12px; margin-bottom: 10px; }
+.article p { font-size: 14px; line-height: 1.85; margin: 0 0 12px; }
+.article p.taken { background: linear-gradient(transparent 60%, rgba(232,89,12,.18) 60%); }
+
+/* 圈选层 */
+.circle-layer { position: absolute; inset: 0; cursor: crosshair; z-index: 25; background: rgba(0,0,0,.04); }
+.circle-layer .rect { position: absolute; border: 2px dashed #f0b400; background: rgba(240,180,0,.12); border-radius: 6px; }
+.circle-layer .hint { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); background: rgba(0,0,0,.75); color: #fff; padding: 5px 12px; border-radius: 14px; font-size: 12px; }
+
+/* 暂存板：屏幕右边缘的 4 个固定标签 */
+.board { position: absolute; right: 10px; top: 72px; width: 136px; display: flex; flex-direction: column; gap: 8px; z-index: 20; }
+.board .head { font-size: 11px; color: var(--muted); text-align: center; line-height: 1.3; }
+.slot { background: rgba(255,255,255,.97); border: 1px solid var(--line); border-left: 5px solid var(--c); border-radius: 10px; padding: 7px 8px; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,.08); user-select: none; transition: transform .12s, box-shadow .12s; }
+.slot:hover, .slot.open { transform: translateX(-4px); box-shadow: 0 5px 16px rgba(0,0,0,.15); }
+.slot.bump { animation: bump .4s; }
+@keyframes bump { 35% { transform: translateX(-4px) scale(1.07); } }
+.slot .row1 { display: flex; align-items: center; gap: 6px; }
+.slot .k { width: 19px; height: 19px; border-radius: 5px; background: var(--c); color: #fff; font-size: 11px; display: grid; place-items: center; font-weight: 700; }
+.slot .name { font-weight: 600; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.slot .n { color: var(--muted); font-size: 11px; }
+.slot .thumbs { display: flex; gap: 3px; margin-top: 6px; height: 22px; }
+.slot .thumbs i { width: 22px; height: 22px; border-radius: 4px; display: grid; place-items: center; background: #eee; font-style: normal; font-size: 10px; color: #8a7a55; }
+.slot .thumbs i.txt { background: #f4f1ea; }
+.slot .thumbs .more { width: auto; padding: 0 4px; background: transparent; color: var(--muted); }
+.slot .empty { font-size: 11px; color: #aaa; margin-top: 4px; }
+.slot .pasted { font-size: 10px; color: var(--ok); margin-top: 3px; }
+
+/* 展开一个标签 */
+.tray { position: absolute; right: 154px; width: 310px; max-height: calc(100% - 90px); overflow: auto; background: #fff; border-radius: 12px; box-shadow: 0 12px 34px rgba(0,0,0,.22); padding: 10px; z-index: 30; border-top: 4px solid var(--c); }
+.tray .th { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.tray .th input { flex: 1; font: inherit; font-weight: 600; border: 1px solid transparent; border-radius: 5px; padding: 2px 4px; }
+.tray .th input:hover, .tray .th input:focus { border-color: #ddd; }
+.tray .item { display: flex; gap: 8px; padding: 7px 4px; border-top: 1px solid #f0eeea; align-items: flex-start; }
+.tray .item .th2 { width: 44px; height: 44px; border-radius: 6px; flex: none; background: #f4f1ea; display: grid; place-items: center; font-size: 10px; color: #8a7a55; }
+.tray .item .body { flex: 1; min-width: 0; }
+.tray .item .title { font-weight: 600; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.tray .item .src { color: var(--muted); font-size: 11px; }
+.tray .item .ops { display: flex; flex-direction: column; gap: 3px; }
+.tray .item .ops button { padding: 1px 6px; font-size: 11px; }
+.tray .item .ops button.kept { color: #c08a00; border-color: #e7c66a; background: #fff8e1; }
+.tray .tf { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.tray .none { color: #999; padding: 10px 4px; }
+
+/* 圆盘：圈完选标签 */
+.radial { position: fixed; width: 0; height: 0; z-index: 60; }
+.radial button { position: absolute; width: 92px; height: 34px; margin: -17px 0 0 -46px; border-radius: 17px; border: 0; color: #fff; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.radial button.x { width: 34px; margin-left: -17px; background: #555; }
+.radial .cap { position: absolute; left: -110px; width: 220px; top: 74px; text-align: center; font-size: 11px; color: #333; background: rgba(255,255,255,.92); border-radius: 8px; padding: 3px 6px; }
+
+/* 飞入动画 */
+.ghost { position: fixed; z-index: 70; border-radius: 8px; pointer-events: none; transition: transform .5s cubic-bezier(.4,.1,.3,1), opacity .5s; box-shadow: 0 6px 18px rgba(0,0,0,.25); }
+
+/* 模拟 agent 对话框 */
+.agent { width: 340px; flex: none; background: var(--panel); border-radius: 10px; box-shadow: 0 4px 18px rgba(0,0,0,.12); display: flex; flex-direction: column; overflow: hidden; }
+.agent .ahead { padding: 9px 12px; border-bottom: 1px solid var(--line); font-weight: 600; }
+.agent .ahead small { font-weight: 400; color: var(--muted); }
+.msgs { flex: 1; overflow: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; }
+.msg { max-width: 92%; padding: 8px 10px; border-radius: 10px; white-space: pre-wrap; }
+.msg.me { align-self: flex-end; background: #eef3ff; }
+.msg.ai { align-self: flex-start; background: #f4f4f2; }
+.composer { border-top: 1px solid var(--line); padding: 8px; position: relative; transition: background .15s; }
+.composer.drop { background: #eef6ff; outline: 2px dashed #6b9cf5; outline-offset: -4px; }
+.composer.flash { animation: flash .6s; }
+@keyframes flash { 30% { background: #fff4df; } }
+.atts { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+.att { display: flex; align-items: center; gap: 4px; font-size: 11px; padding: 2px 6px 2px 2px; border-radius: 6px; background: #f2f1ef; max-width: 150px; }
+.att i { width: 20px; height: 20px; border-radius: 4px; flex: none; }
+.att span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+textarea { width: 100%; height: 118px; resize: none; font: inherit; border: 1px solid #ddd; border-radius: 8px; padding: 7px; }
+.cbar { display: flex; gap: 6px; margin-top: 6px; align-items: center; }
+.cbar .spacer { flex: 1; }
+.cbar label { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+.cbar button { white-space: nowrap; }
+.pastemenu { position: absolute; bottom: 40px; left: 8px; background: #fff; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.2); padding: 6px; z-index: 40; width: 210px; }
+.pastemenu button { display: flex; width: 100%; text-align: left; border: 0; gap: 8px; align-items: center; padding: 6px; }
+.pastemenu button:disabled { color: #bbb; cursor: default; }
+.pastemenu .k { width: 18px; height: 18px; border-radius: 5px; color: #fff; display: grid; place-items: center; font-size: 11px; }
+
+/* 底部：一步步试 */
+.guide { position: absolute; left: 0; right: 0; bottom: 0; height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 12px; background: #fbfaf8; border-top: 1px solid var(--line); font-size: 12px; overflow-x: auto; white-space: nowrap; }
+.guide .s { padding: 3px 9px; border-radius: 12px; background: #efeeeb; color: #555; }
+.guide .s.done { background: #e3f4ea; color: var(--ok); }
+.guide .s.done::before { content: "✓ "; }
+.toast { position: fixed; left: 50%; top: 44px; transform: translateX(-50%); background: rgba(20,20,20,.86); color: #fff; padding: 7px 14px; border-radius: 16px; font-size: 12px; z-index: 90; display: flex; gap: 10px; align-items: center; transition: opacity .2s; }
+.toast button { background: transparent; color: #ffd36b; border: 0; padding: 0; text-decoration: underline; }
+.help { position: fixed; right: 12px; bottom: 54px; width: 470px; background: #fff; border-radius: 12px; box-shadow: 0 12px 34px rgba(0,0,0,.22); padding: 12px 14px; z-index: 80; font-size: 12px; }
+.help table { border-collapse: collapse; width: 100%; }
+.help td, .help th { border-bottom: 1px solid #f0eeea; padding: 5px 4px; text-align: left; vertical-align: top; }
+.help th { color: var(--muted); font-weight: 500; }
+kbd { font: 11px ui-monospace, Menlo, monospace; background: #f2f1ef; border: 1px solid #ddd; border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
+/* 窄窗口：菜单栏收起说明文字，agent 变窄 */
+.agent { width: clamp(250px, 30vw, 340px); }
+@media (max-width: 1180px) { .menubar .life { display: none; } .menubar input { width: 150px; } }
+@media (max-width: 900px) { .menubar .goalwrap { display: none; } .menubar select { max-width: 170px; } }
+</style>
+</head>
+<body>
+
+<div class="menubar">
+  <b>◎ 灵感圈</b>
+  <span class="goalwrap">这次找：<input id="goal" value="AI 控制器发布会 PPT 的参考"></span>
+  <span>标签方案
+    <select id="preset">
+      <option value="ppt">做 PPT：排版 / 配色 / 图表 / 素材</option>
+      <option value="product">选产品：外观 / 参数 / 价格 / 评价</option>
+      <option value="article">写文章：观点 / 数据 / 案例 / 金句</option>
+    </select>
+  </span>
+  <span class="spacer"></span>
+  <span class="life" id="life"></span>
+  <span class="status" id="status"></span>
+  <button id="endBtn">结束本次</button>
+</div>
+
+<div class="desk">
+  <section class="browser" id="browser">
+    <div class="tabs">
+      <div class="tab on" data-tab="feed">小红书 · 搜索“发布会 PPT”</div>
+      <div class="tab" data-tab="article">网页 · 一篇文章</div>
+    </div>
+    <div class="addr" id="addr">https://www.xiaohongshu.com/search_result?keyword=发布会PPT</div>
+    <div class="page" id="page">
+      <div class="feed" id="feed"></div>
+      <article class="article hidden" id="article"></article>
+    </div>
+    <div class="board" id="board"></div>
+    <div class="tray hidden" id="tray"></div>
+  </section>
+
+  <aside class="agent">
+    <div class="ahead">Claude <small>（模拟的 agent 对话框）</small></div>
+    <div class="msgs" id="msgs">
+      <div class="msg ai">把找到的参考发给我，我按它们重做你的发布会 PPT。</div>
+    </div>
+    <div class="composer" id="composer">
+      <div class="atts" id="atts"></div>
+      <textarea id="ta" placeholder="写要求；Ctrl+1–4 把对应标签贴进来，或把右边的标签拖到这里"></textarea>
+      <div class="cbar">
+        <button id="pasteBtn">从标签粘贴 ▾</button>
+        <label title="贴给 agent 后把这个标签清空"><input type="checkbox" id="clearAfter"> 贴完清空</label>
+        <span class="spacer"></span>
+        <button class="primary" id="sendBtn">发送</button>
+      </div>
+      <div class="pastemenu hidden" id="pastemenu"></div>
+    </div>
+  </aside>
+</div>
+
+<div class="guide" id="guide"></div>
+<div class="help hidden" id="help">
+  <b>以后用手柄怎么按</b>（原型里用键盘和鼠标代替）
+  <table>
+    <tr><th>动作</th><th>原型里</th><th>手柄（建议，待定）</th></tr>
+    <tr><td>放进标签</td><td>指着卡片按 <kbd>1</kbd>–<kbd>4</kbd></td><td>S 短按出圆盘，往标签方向一拨；或按住 V 说“放进排版”</td></tr>
+    <tr><td>存一段字</td><td>选中文字按 <kbd>1</kbd>–<kbd>4</kbd></td><td>同上</td></tr>
+    <tr><td>圈一块</td><td><kbd>C</kbd> 拖框 → 选标签</td><td>S 长按圈 → 松开出圆盘选标签</td></tr>
+    <tr><td>看标签里有什么</td><td>点右边的标签</td><td>指针推到屏幕右边缘</td></tr>
+    <tr><td>贴给 agent</td><td>拖标签到输入框 / 输入框里 <kbd>Ctrl</kbd>+<kbd>1</kbd>–<kbd>4</kbd></td><td>在 agent 里按住 V 说“把排版贴进来”</td></tr>
+    <tr><td>撤销刚才那条</td><td><kbd>Z</kbd></td><td>R</td></tr>
+  </table>
+  <p style="margin:8px 0 0;color:#777">真机里数字键不能全局占用（⌃⌥1–4 已给点赞等），所以“指着卡片按数字”会变成“先叫出圆盘再选”。原型先看流程顺不顺。</p>
+</div>
+
+<script>
+const PRESETS = {
+  ppt: ["排版", "配色", "图表", "素材"],
+  product: ["外观", "参数", "价格", "评价"],
+  article: ["观点", "数据", "案例", "金句"],
+};
+const COLORS = ["var(--t0)", "var(--t1)", "var(--t2)", "var(--t3)"];
+const HEX = ["#e8590c", "#2f6fed", "#1f9d55", "#8b5cf6"];
+const CARDS = [
+  ["极简风 PPT 排版：封面这样做更高级", "设计课代表", "1.2万", ["#cfd9ee", "#8aa1cf"], "封面留白"],
+  ["奶油风配色｜米白 + 原木，越看越舒服", "小林的家", "8634", ["#efe1cb", "#c39f6e"], "米白原木"],
+  ["发布会 PPT 的数据页怎么排", "汇报研究所", "5321", ["#dfe4ec", "#73839e"], "数据页"],
+  ["科技感配色：深蓝 + 荧光绿", "视觉日记", "2.3万", ["#13254a", "#2ed895"], "深蓝荧光"],
+  ["免费可商用的产品渲染素材", "素材搬运工", "9876", ["#ececec", "#a9a9a9"], "渲染素材"],
+  ["一页只讲一个结论的图表设计", "图表控", "4410", ["#e7efe2", "#6f9f62"], "一页一结论"],
+  ["苹果发布会风格 Keynote 模板", "Keynote 研究所", "3.1万", ["#1b1b1b", "#5a5a5a"], "Keynote"],
+  ["莫兰迪色系 10 组配色卡", "调色盘", "1.8万", ["#d8ccc2", "#a2968d"], "莫兰迪"],
+  ["硬件产品爆炸图怎么画", "工业设计笔记", "6720", ["#e2e2ec", "#7f7fa6"], "爆炸图"],
+  ["封面大字报排版 6 种套路", "排版研究社", "2.6万", ["#f8e3da", "#dc6f52"], "大字报"],
+  ["图标素材合集（线性风）", "UI 素材库", "1.1万", ["#e4f2f2", "#56aaaa"], "线性图标"],
+  ["渐变色背景怎么配不土", "色彩课", "7788", ["#f3e2f2", "#9a63cf"], "渐变"],
+];
+const ARTICLE = {
+  title: "PPT 数据页怎么排：一页只讲一个结论",
+  source: "知乎专栏 · 汇报研究所",
+  url: "https://zhuanlan.zhihu.com/p/000000",
+  paras: [
+    "很多发布会 PPT 的数据页之所以难看，不是因为图表不好看，而是一页里塞了三四个结论，观众不知道该看哪里。",
+    "第一条规则：一页只讲一个结论，并且把这个结论直接写成标题，比如“续航提升 40%”，而不是“续航数据”。",
+    "第二条规则：只保留支撑这个结论的那一组数据，其余的放进附录。对比对象最多两个：自己的上一代和一个竞品。",
+    "第三条规则：把要强调的数字放大到标题字号的两倍，其余数字一律降成灰色，让视线第一眼落在重点上。",
+    "配色上，数据页最多用一个强调色，背景和坐标轴用中性灰。强调色最好和封面主色一致，整套 PPT 才统一。",
+    "最后，图表下方写一行来源和测试条件，比如“实验室环境，25℃，屏幕亮度 50%”，台下的懂行观众会很在意。",
+  ],
+};
+
+let tags = PRESETS.ppt.map(name => ({ name, items: [], pasted: 0 }));
+let seq = 0;
+let history = [];          // 撤销用：[{ti, id}]
+let kept = 0;              // 结束时“留下”存进长期灵感库的条数
+let mouse = { x: 0, y: 0 };
+let openTray = -1;
+let circle = null;         // 圈选状态
+let radialItem = null;     // 圈完等着选标签的那一块
+const started = new Date();
+const done = new Set();
+const STEPS = [
+  ["card", "① 指着卡片按 1–4"],
+  ["text", "② 切到「网页」，选一段字按 1–4"],
+  ["circle", "③ 按 C 框一块，再选标签"],
+  ["tray", "④ 点右边的标签看里面"],
+  ["paste", "⑤ 把标签拖进 agent 输入框（或 Ctrl+1–4）"],
+  ["send", "⑥ 发送"],
+  ["end", "⑦ 点「结束本次」清空"],
+];
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const clip = (s, n) => s.length > n ? s.slice(0, n) + "…" : s;
+const grad = c => `linear-gradient(135deg, ${c[0]}, ${c[1]})`;
+const hhmm = d => d.toTimeString().slice(0, 5);
+
+// ---------- 页面 ----------
+$("feed").innerHTML = CARDS.map((c, i) => `
+  <div class="card" data-i="${i}">
+    <div class="cover" style="background:${grad(c[3])}">${esc(c[4])}</div>
+    <div class="t">${esc(c[0])}</div>
+    <div class="a"><span>${esc(c[1])}</span><span>♡ ${c[2]}</span></div>
+    <div class="in"></div>
+  </div>`).join("");
+$("article").innerHTML = `<h1>${esc(ARTICLE.title)}</h1><div class="meta">${esc(ARTICLE.source)}</div>` +
+  ARTICLE.paras.map((p, i) => `<p data-p="${i}">${esc(p)}</p>`).join("");
+
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === t));
+  const feed = t.dataset.tab === "feed";
+  $("feed").classList.toggle("hidden", !feed);
+  $("article").classList.toggle("hidden", feed);
+  $("addr").textContent = feed ? "https://www.xiaohongshu.com/search_result?keyword=发布会PPT" : ARTICLE.url;
+});
+
+document.addEventListener("mousemove", e => {
+  mouse = { x: e.clientX, y: e.clientY };
+  const card = e.target.closest && e.target.closest(".card");
+  document.querySelectorAll(".card.hover").forEach(c => { if (c !== card) c.classList.remove("hover"); });
+  if (card && !circle) card.classList.add("hover");
+});
+
+// ---------- 暂存板 ----------
+function render() {
+  $("board").innerHTML = `<div class="head">固定标签 · 只记这一次<br>结束本次或今晚 24:00 清空</div>` + tags.map((t, i) => {
+    const th = t.items.slice(-4).map(it => it.kind === "text"
+      ? `<i class="txt">字</i>` : `<i style="background:${grad(it.color)}"></i>`).join("");
+    const more = t.items.length > 4 ? `<i class="more">+${t.items.length - 4}</i>` : "";
+    return `<div class="slot ${openTray === i ? "open" : ""}" data-t="${i}" draggable="true" style="--c:${COLORS[i]}"
+                 title="点开看里面；拖到右边 agent 输入框直接贴">
+      <div class="row1"><span class="k">${i + 1}</span><span class="name">${esc(t.name)}</span><span class="n">${t.items.length}</span></div>
+      ${t.items.length ? `<div class="thumbs">${th}${more}</div>` : `<div class="empty">按 ${i + 1} 放进来</div>`}
+      ${t.pasted ? `<div class="pasted">已贴给 agent ${t.pasted} 次</div>` : ""}
+    </div>`;
+  }).join("");
+  // 卡片上标出已经在哪些标签里
+  document.querySelectorAll(".card").forEach(el => {
+    const key = "card:" + el.dataset.i;
+    el.querySelector(".in").innerHTML = tags.map((t, i) => t.items.some(x => x.key === key)
+      ? `<span style="background:${HEX[i]}">${i + 1}</span>` : "").join("");
+  });
+  document.querySelectorAll(".article p").forEach(p => {
+    p.classList.toggle("taken", tags.some(t => t.items.some(x => x.para === +p.dataset.p)));
+  });
+  const n = tags.reduce((a, t) => a + t.items.length, 0);
+  const k = tags.reduce((a, t) => a + t.items.filter(x => x.keep).length, 0);
+  $("status").textContent = `暂存 ${n} 条` + (k ? ` · ★留下 ${k}` : "") + (kept ? ` · 灵感库已存 ${kept}` : "");
+  $("life").textContent = `开始于 ${hhmm(started)} · 点「结束本次」或今晚 24:00 自动清空`;
+  if (openTray >= 0) renderTray();
+  renderGuide();
+}
+
+function bump(i) {
+  const el = document.querySelector(`.slot[data-t="${i}"]`);
+  if (!el) return;
+  el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump");
+}
+
+function fly(from, ti, item) {
+  const slot = document.querySelector(`.slot[data-t="${ti}"]`);
+  if (!from || !slot) return;
+  const to = slot.getBoundingClientRect();
+  const w = Math.min(from.width, 170), h = Math.min(from.height, 130);
+  const g = document.createElement("div");
+  g.className = "ghost";
+  g.style.cssText = `left:${from.left}px;top:${from.top}px;width:${w}px;height:${h}px;background:${item.kind === "text" ? "#f4f1ea" : grad(item.color)}`;
+  document.body.appendChild(g);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    g.style.transform = `translate(${to.left + 20 - from.left}px, ${to.top + 10 - from.top}px) scale(.16)`;
+    g.style.opacity = ".35";
+  }));
+  setTimeout(() => g.remove(), 560);
+}
+
+function capture(ti, item) {
+  const t = tags[ti];
+  if (item.key && t.items.some(x => x.key === item.key)) { toast(`已经在「${t.name}」里了`); bump(ti); return false; }
+  item.id = ++seq;
+  item.at = new Date();
+  t.items.push(item);
+  history.push({ ti, id: item.id });
+  render();
+  fly(item.from, ti, item);
+  setTimeout(() => bump(ti), 420);
+  toast(`已放进「${t.name}」（${t.items.length} 条）`, "撤销 Z", undo);
+  return true;
+}
+
+// 数字键：指着的卡片，或选中的文字
+function grab(ti) {
+  const sel = window.getSelection();
+  const text = sel ? sel.toString().trim() : "";
+  if (text && $("article").contains(sel.anchorNode)) {
+    const range = sel.getRangeAt(0);
+    const p = sel.anchorNode.parentElement && sel.anchorNode.parentElement.closest("p");
+    capture(ti, { kind: "text", text: clip(text, 160), title: `“${clip(text, 40)}”`, source: ARTICLE.source,
+                  url: ARTICLE.url, key: "text:" + text, para: p ? +p.dataset.p : -1, from: range.getBoundingClientRect() });
+    sel.removeAllRanges();
+    mark("text");
+    return;
+  }
+  const el = document.elementFromPoint(mouse.x, mouse.y);
+  const card = el && el.closest(".card");
+  if (card && !$("feed").classList.contains("hidden")) {
+    const c = CARDS[+card.dataset.i];
+    capture(ti, { kind: "card", title: c[0], source: "小红书 · " + c[1], color: c[3],
+                  url: `https://www.xiaohongshu.com/explore/demo-${card.dataset.i}`, key: "card:" + card.dataset.i,
+                  from: card.querySelector(".cover").getBoundingClientRect() });
+    mark("card");
+    return;
+  }
+  toast("先把指针放到一张卡片上，或选中一段文字，再按 1–4");
+}
+
+function undo() {
+  const h = history.pop();
+  if (!h) { toast("没有可撤销的"); return; }
+  const t = tags[h.ti];
+  t.items = t.items.filter(x => x.id !== h.id);
+  render();
+  toast(`已从「${t.name}」拿出来`);
+}
+
+// ---------- 圈一块 ----------
+function startCircle() {
+  if (circle) return;
+  closeTray();
+  const layer = document.createElement("div");
+  layer.className = "circle-layer";
+  layer.innerHTML = `<div class="hint">按住鼠标拖一个框（以后是 S 长按圈）；Esc 取消</div>`;
+  layer.style.top = $("page").offsetTop + "px";   // 盖在页面区上，不跟着页面滚动
+  $("browser").appendChild(layer);
+  circle = { layer };
+  layer.onmousedown = e => {
+    const r = layer.getBoundingClientRect();
+    circle.x0 = e.clientX; circle.y0 = e.clientY;
+    circle.box = document.createElement("div");
+    circle.box.className = "rect";
+    layer.appendChild(circle.box);
+    circle.r = r;
+  };
+  layer.onmousemove = e => {
+    if (!circle.box) return;
+    const x = Math.min(e.clientX, circle.x0), y = Math.min(e.clientY, circle.y0);
+    const w = Math.abs(e.clientX - circle.x0), h = Math.abs(e.clientY - circle.y0);
+    Object.assign(circle.box.style, { left: x - circle.r.left + "px", top: y - circle.r.top + "px", width: w + "px", height: h + "px" });
+  };
+  layer.onmouseup = e => {
+    if (!circle.box) return;
+    const rect = { left: Math.min(e.clientX, circle.x0), top: Math.min(e.clientY, circle.y0),
+                   width: Math.abs(e.clientX - circle.x0), height: Math.abs(e.clientY - circle.y0) };
+    endCircle();
+    if (rect.width < 24 || rect.height < 24) { toast("圈得太小了"); return; }
+    rect.right = rect.left + rect.width; rect.bottom = rect.top + rect.height;
+    openRadial(e.clientX, e.clientY, regionItem(rect));
+  };
+}
+
+function endCircle() {
+  if (!circle) return;
+  circle.layer.remove();
+  circle = null;
+}
+
+const hit = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+
+function regionItem(rect) {
+  const inside = [];
+  let color = ["#f4f1ea", "#e3dccb"];
+  if (!$("feed").classList.contains("hidden")) {
+    document.querySelectorAll(".card").forEach(el => {
+      if (hit(rect, el.getBoundingClientRect())) {
+        const c = CARDS[+el.dataset.i];
+        if (!inside.length) color = c[3];
+        inside.push(c[0]);
+      }
+    });
+  } else {
+    document.querySelectorAll(".article p").forEach(p => { if (hit(rect, p.getBoundingClientRect())) inside.push(clip(p.textContent, 30)); });
+  }
+  return { kind: "region", title: `圈选 ${Math.round(rect.width)}×${Math.round(rect.height)}` + (inside.length ? `：${clip(inside.join(" / "), 60)}` : ""),
+           source: $("feed").classList.contains("hidden") ? ARTICLE.source : "小红书 · 搜索结果", color,
+           url: $("addr").textContent, from: rect, texts: inside };
+}
+
+function openRadial(x, y, item) {
+  closeRadial();
+  radialItem = item;
+  const r = document.createElement("div");
+  r.className = "radial";
+  r.id = "radial";
+  r.style.left = x + "px"; r.style.top = y + "px";
+  const pos = [[0, -62], [96, 0], [0, 62], [-96, 0]];   // 上 右 下 左
+  r.innerHTML = tags.map((t, i) => `<button data-t="${i}" style="left:${pos[i][0]}px;top:${pos[i][1]}px;background:${HEX[i]}">${i + 1} ${esc(t.name)}</button>`).join("")
+    + `<button class="x" style="left:0;top:0" title="取消（R）">✕</button><div class="cap">放进哪个标签？按 1–4 或点一下</div>`;
+  document.body.appendChild(r);
+  r.onclick = e => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    if (b.classList.contains("x")) { closeRadial(); toast("没存"); return; }
+    chooseRadial(+b.dataset.t);
+  };
+}
+
+function chooseRadial(ti) {
+  const it = radialItem;
+  closeRadial();
+  if (it && capture(ti, it)) mark("circle");
+}
+
+function closeRadial() {
+  const r = $("radial");
+  if (r) r.remove();
+  radialItem = null;
+}
+
+// ---------- 展开一个标签 ----------
+function toggleTray(i) {
+  openTray = openTray === i ? -1 : i;
+  if (openTray >= 0) mark("tray");
+  render();
+  $("tray").classList.toggle("hidden", openTray < 0);
+}
+function closeTray() { openTray = -1; $("tray").classList.add("hidden"); render(); }
+
+function renderTray() {
+  const i = openTray, t = tags[i];
+  const slot = document.querySelector(`.slot[data-t="${i}"]`);
+  const tray = $("tray");
+  tray.style.setProperty("--c", COLORS[i]);
+  tray.style.top = (slot ? slot.offsetTop + $("board").offsetTop - 6 : 80) + "px";
+  tray.innerHTML = `
+    <div class="th"><span class="k" style="width:19px;height:19px;border-radius:5px;background:${HEX[i]};color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700">${i + 1}</span>
+      <input value="${esc(t.name)}" id="rename" title="改标签名"><button id="trayClose">✕</button></div>
+    ${t.items.length ? t.items.map(it => `
+      <div class="item">
+        <div class="th2" style="${it.kind === "text" ? "" : `background:${grad(it.color)}`}">${it.kind === "text" ? "文字" : it.kind === "region" ? "圈选" : ""}</div>
+        <div class="body"><div class="title">${esc(it.title)}</div>
+          <div class="src">${esc(it.source)} · ${hhmm(it.at)}</div></div>
+        <div class="ops">
+          <button data-keep="${it.id}" class="${it.keep ? "kept" : ""}" title="结束本次时存进长期灵感库">${it.keep ? "★ 留下" : "☆ 留下"}</button>
+          <button data-del="${it.id}" title="拿出来">✕</button>
+        </div>
+      </div>`).join("") : `<div class="none">还是空的。指着卡片按 ${i + 1}，或选中一段字按 ${i + 1}。</div>`}
+    <div class="tf">
+      <button id="trayPaste" ${t.items.length ? "" : "disabled"}>贴给 agent</button>
+      <button id="trayCopy" ${t.items.length ? "" : "disabled"}>复制到剪贴板</button>
+      <button id="trayClear" ${t.items.length ? "" : "disabled"}>清空这个标签</button>
+    </div>`;
+  $("rename").onchange = e => { const v = e.target.value.trim(); if (v) { t.name = v; render(); } };
+  $("trayClose").onclick = closeTray;
+  $("trayPaste").onclick = () => pasteToAgent(i);
+  $("trayCopy").onclick = () => {
+    const text = packText(t);
+    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(
+      () => toast("已复制（真机里会连截图一起放进剪贴板）"), () => toast("已复制（原型里浏览器不让写剪贴板，真机会连截图一起放）"));
+  };
+  $("trayClear").onclick = () => {
+    const saved = t.items;
+    t.items = [];
+    render();
+    toast(`已清空「${t.name}」`, "撤销", () => { t.items = saved; render(); });
+  };
+  tray.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+    t.items = t.items.filter(x => x.id !== +b.dataset.del);
+    render();
+  });
+  tray.querySelectorAll("[data-keep]").forEach(b => b.onclick = () => {
+    const it = t.items.find(x => x.id === +b.dataset.keep);
+    it.keep = !it.keep;
+    render();
+  });
+}
+
+$("board").addEventListener("click", e => {
+  const s = e.target.closest(".slot");
+  if (s) toggleTray(+s.dataset.t);
+});
+$("board").addEventListener("dragstart", e => {
+  const s = e.target.closest(".slot");
+  if (!s) return;
+  e.dataTransfer.setData("text/plain", "inspire-tag:" + s.dataset.t);
+  e.dataTransfer.effectAllowed = "copy";
+});
+
+// ---------- 贴给 agent ----------
+function packText(t) {
+  const lines = [`【${t.name}】${t.items.length} 条参考（这次找：${$("goal").value}）`];
+  t.items.forEach((it, n) => {
+    lines.push(`${n + 1}. ${it.kind === "text" ? it.text : it.title} —— ${it.source}`);
+    if (it.url) lines.push(`   ${it.url}`);
+  });
+  return lines.join("\n");
+}
+
+function pasteToAgent(ti) {
+  const t = tags[ti];
+  if (!t.items.length) { toast(`「${t.name}」还是空的`); return; }
+  const ta = $("ta");
+  ta.value = (ta.value.trim() ? ta.value.replace(/\s*$/, "") + "\n\n" : "") + packText(t);
+  t.items.filter(it => it.kind !== "text").forEach(it => {
+    const a = document.createElement("div");
+    a.className = "att";
+    a.innerHTML = `<i style="background:${grad(it.color)}"></i><span>${esc(clip(it.title, 18))}</span>`;
+    $("atts").appendChild(a);
+  });
+  t.pasted += 1;
+  const n = t.items.length;
+  if ($("clearAfter").checked) t.items = [];
+  render();
+  const c = $("composer");
+  c.classList.remove("flash"); void c.offsetWidth; c.classList.add("flash");
+  toast(`已把「${t.name}」${n} 条贴进输入框` + ($("clearAfter").checked ? "，标签已清空" : "，标签里还留着"));
+  mark("paste");
+  $("pastemenu").classList.add("hidden");
+}
+
+const composer = $("composer");
+composer.addEventListener("dragover", e => { e.preventDefault(); composer.classList.add("drop"); });
+composer.addEventListener("dragleave", e => { if (!composer.contains(e.relatedTarget)) composer.classList.remove("drop"); });
+composer.addEventListener("drop", e => {
+  e.preventDefault();
+  composer.classList.remove("drop");
+  const d = e.dataTransfer.getData("text/plain");
+  if (d.startsWith("inspire-tag:")) pasteToAgent(+d.split(":")[1]);
+});
+
+$("pasteBtn").onclick = () => {
+  const m = $("pastemenu");
+  m.innerHTML = tags.map((t, i) => `<button data-t="${i}" ${t.items.length ? "" : "disabled"}>
+      <span class="k" style="background:${HEX[i]}">${i + 1}</span>${esc(t.name)}<span style="margin-left:auto;color:#999">${t.items.length} 条 · Ctrl+${i + 1}</span></button>`).join("");
+  m.classList.toggle("hidden");
+  m.onclick = e => { const b = e.target.closest("button"); if (b && !b.disabled) pasteToAgent(+b.dataset.t); };
+};
+
+$("sendBtn").onclick = () => {
+  const text = $("ta").value.trim();
+  const atts = $("atts").innerHTML;
+  if (!text && !atts) { toast("先写点什么，或贴一个标签进来"); return; }
+  const m = document.createElement("div");
+  m.className = "msg me";
+  m.innerHTML = (atts ? `<div class="atts">${atts}</div>` : "") + esc(text);
+  $("msgs").appendChild(m);
+  const imgs = $("atts").children.length;
+  $("ta").value = "";
+  $("atts").innerHTML = "";
+  mark("send");
+  setTimeout(() => {
+    const r = document.createElement("div");
+    r.className = "msg ai";
+    r.textContent = `收到 ${imgs} 张参考图和你的文字。我先按这些参考重做封面和数据页，做完给你看。（模拟回复）`;
+    $("msgs").appendChild(r);
+    $("msgs").scrollTop = 1e6;
+  }, 500);
+  $("msgs").scrollTop = 1e6;
+};
+
+// ---------- 结束本次：短期记忆清空 ----------
+$("endBtn").onclick = () => {
+  const n = tags.reduce((a, t) => a + t.items.length, 0);
+  if (!n) { toast("暂存板是空的"); mark("end"); return; }
+  const snapshot = tags.map(t => ({ ...t, items: t.items.slice() }));
+  const keep = tags.reduce((a, t) => a + t.items.filter(x => x.keep).length, 0);
+  tags.forEach(t => { t.items = []; t.pasted = 0; });
+  kept += keep;
+  history = [];
+  closeTray();
+  render();
+  mark("end");
+  toast(`已清空 ${n} 条` + (keep ? `，其中 ★留下的 ${keep} 条存进了长期灵感库` : ""), "撤销", () => {
+    tags = snapshot; kept -= keep; render();
+  }, 5000);
+};
+
+$("preset").onchange = e => {
+  PRESETS[e.target.value].forEach((name, i) => tags[i].name = name);
+  render();
+  toast("标签名换了，里面的东西不动");
+};
+
+// ---------- 键盘 ----------
+document.addEventListener("keydown", e => {
+  const inInput = e.target.closest && e.target.closest("textarea, input, select");
+  if (inInput) {
+    if (e.ctrlKey && "1234".includes(e.key)) { e.preventDefault(); pasteToAgent(+e.key - 1); }
+    return;
+  }
+  if ($("radial")) {
+    if ("1234".includes(e.key)) { e.preventDefault(); chooseRadial(+e.key - 1); }
+    else if (e.key === "Escape") { closeRadial(); toast("没存"); }
+    return;
+  }
+  if (circle) { if (e.key === "Escape") { endCircle(); toast("已取消圈选"); } return; }
+  if ("1234".includes(e.key)) { e.preventDefault(); grab(+e.key - 1); }
+  else if (e.key === "c" || e.key === "C") startCircle();
+  else if (e.key === "z" || e.key === "Z") undo();
+  else if (e.key === "Escape") { closeTray(); $("pastemenu").classList.add("hidden"); }
+});
+
+// ---------- 提示和引导 ----------
+let toastTimer;
+function toast(text, actionText, action, ms = 2600) {
+  let t = document.querySelector(".toast");
+  if (!t) { t = document.createElement("div"); t.className = "toast"; document.body.appendChild(t); }
+  t.innerHTML = `<span>${esc(text)}</span>` + (actionText ? `<button>${esc(actionText)}</button>` : "");
+  if (actionText) t.querySelector("button").onclick = () => { action(); t.remove(); };
+  t.style.opacity = "1";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.style.opacity = "0"; setTimeout(() => t.remove(), 220); }, ms);
+}
+
+function mark(step) { if (!done.has(step)) { done.add(step); renderGuide(); } }
+function renderGuide() {
+  $("guide").innerHTML = `<b style="margin-right:4px">试试：</b>` +
+    STEPS.map(([k, s]) => `<span class="s ${done.has(k) ? "done" : ""}">${s}</span>`).join("") +
+    `<span style="flex:1"></span><button id="helpBtn">手柄怎么按？</button>`;
+  $("helpBtn").onclick = () => $("help").classList.toggle("hidden");
+}
+
+render();
+</script>
+</body>
+</html>

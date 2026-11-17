@@ -80,6 +80,99 @@ final class CoreTests: XCTestCase {
         XCTAssertEqual(AX.clean("Google 搜索"), "Google 搜索")
     }
 
+    // MARK: F1 快速搜索
+
+    func testSearchPlanDestinations() {
+        func plan(_ t: String, _ url: String? = nil) -> SearchPlan { QuickSearch.plan(input: t, currentURL: url) }
+        XCTAssertEqual(plan("小红书 奶油风客厅").destination.name, "小红书")
+        XCTAssertEqual(plan("小红书 奶油风客厅").query, "奶油风客厅")
+        XCTAssertEqual(plan("在小红书上搜奶油风").query, "奶油风")
+        XCTAssertEqual(plan("帮我搜一下B站上搜机械键盘").destination.name, "B 站")
+        XCTAssertEqual(plan("帮我搜一下B站上搜机械键盘").query, "机械键盘")
+        XCTAssertEqual(plan("x: claude").destination.name, "推特")
+        // 纯英文前缀后面必须有空格或冒号：xiaomi 不是推特
+        XCTAssertEqual(plan("xiaomi 14").destination.name, "Google")
+        XCTAssertEqual(plan("xiaomi 14").query, "xiaomi 14")
+        // 没点名：按当前网站
+        let cur = plan("机械键盘", "https://www.bilibili.com/video/BV1xx")
+        XCTAssertEqual(cur.destination.name, "B 站")
+        XCTAssertTrue(cur.reason.contains("当前网站"))
+        XCTAssertEqual(plan("机械键盘", "https://www.xiaohongshu.com/explore/abc").destination.name, "小红书")
+        XCTAssertEqual(plan("机械键盘", "https://example.com/").destination.name, "Google")
+        XCTAssertEqual(plan("机械键盘", nil).destination.name, "Google")
+        // 页内、灵感库
+        XCTAssertEqual(plan("页内 价格").destination, .inPage)
+        XCTAssertEqual(plan("页内 价格").query, "价格")
+        XCTAssertEqual(plan("灵感库 配色").destination, .library)
+        // 单个“在”“搜”不当口头语去掉
+        XCTAssertEqual(plan("在家健身").query, "在家健身")
+        XCTAssertEqual(plan("搜狗输入法").query, "搜狗输入法")
+    }
+
+    func testSearchURLEncoding() {
+        let p = QuickSearch.plan(input: "小红书 a&b=c #配色", currentURL: nil)
+        let u = p.url!.absoluteString
+        XCTAssertTrue(u.hasPrefix("https://www.xiaohongshu.com/search_result?keyword="), u)
+        XCTAssertFalse(u.contains("&b="), "& 必须编码：\(u)")
+        XCTAssertTrue(u.contains("%26") && u.contains("%3D") && u.contains("%23"), u)
+        XCTAssertEqual(QuickSearch.url(QuickSearch.defaultSite, "a b")!.absoluteString, "https://www.google.com/search?q=a%20b")
+    }
+
+    // MARK: F3 快捷互动
+
+    func testActionLabelMatching() {
+        XCTAssertTrue(ActionLabels.matches(.like, text: "点赞 1.2万", classes: ""))
+        XCTAssertTrue(ActionLabels.matches(.like, text: "1.2万", classes: "like-wrapper"))          // 只有数字，靠 class
+        XCTAssertTrue(ActionLabels.matches(.collect, text: "", classes: "collect-wrapper"))
+        XCTAssertTrue(ActionLabels.matches(.coin, text: "投币", classes: "video-coin"))
+        XCTAssertTrue(ActionLabels.matches(.follow, text: "+ 关注", classes: ""))
+        XCTAssertFalse(ActionLabels.matches(.follow, text: "关注者 128", classes: ""))
+        XCTAssertFalse(ActionLabels.matches(.like, text: "猜你喜欢", classes: ""))
+        // 太长的文字多半是正文，不当按钮
+        XCTAssertFalse(ActionLabels.matches(.like, text: String(repeating: "这是一段很长的正文，里面提到了赞", count: 3), classes: ""))
+    }
+
+    func testActionAlreadyDone() {
+        XCTAssertEqual(ActionLabels.alreadyDone(.like, text: "取消点赞", classes: "", selected: nil, valueNumber: nil), true)
+        XCTAssertEqual(ActionLabels.alreadyDone(.follow, text: "Following", classes: "", selected: nil, valueNumber: nil), true)
+        XCTAssertEqual(ActionLabels.alreadyDone(.like, text: "1.2万", classes: "video-like on", selected: nil, valueNumber: nil), true)
+        XCTAssertEqual(ActionLabels.alreadyDone(.like, text: "1.2万", classes: "like-wrapper like-active", selected: nil, valueNumber: nil), true)
+        XCTAssertEqual(ActionLabels.alreadyDone(.collect, text: "收藏", classes: "", selected: true, valueNumber: nil), true)
+        XCTAssertNil(ActionLabels.alreadyDone(.like, text: "点赞 32", classes: "like-wrapper", selected: nil, valueNumber: nil))
+        // “button” 里含 on，但不是独立的 on 词
+        XCTAssertNil(ActionLabels.alreadyDone(.like, text: "赞", classes: "like-button", selected: nil, valueNumber: nil))
+    }
+
+    func testActionQuestionAndMock() throws {
+        func c(_ id: String, _ label: String, _ d: Double, comment: Bool) -> ActionCandidate {
+            ActionCandidate(id: id, role: "AXButton", label: label, classes: "", x: 0, y: 0, w: 40, h: 20,
+                            distance: d, direction: "down", inComment: comment, alreadyDone: nil)
+        }
+        let cands = [c("b1", "赞 3", 10, comment: true), c("b2", "点赞 1.2万", 80, comment: false)]
+        XCTAssertEqual(ActionQuestions.mock(cands), "b2", "评论区外的优先")
+        XCTAssertEqual(ActionQuestions.mock([c("b1", "赞", 5, comment: true)]), "b1")
+        XCTAssertEqual(ActionQuestions.mock([]), "none")
+        let body = ActionQuestions.requestBody(.like, context: ScreenContext(appName: "Chrome", windowTitle: "笔记"), pointer: .zero, candidates: cands)
+        XCTAssertTrue(JSONSerialization.isValidJSONObject(body))
+        let q = try XCTUnwrap((body["questions"] as? [String: Any])?["target"] as? [String: Any])
+        XCTAssertEqual(Set(((q["criteria"] as? [String: String]) ?? [:]).keys), ["b1", "b2", "none"])
+        let st = try XCTUnwrap(body["state"] as? [String: Any])
+        XCTAssertEqual((st["candidates"] as? [[String: Any]])?.first?["in_comment_area"] as? Bool, true)
+        let r = try ActionQuestions.parse(Data(#"{"answers":{"target":{"type":"choice","choice":"b2","confidence":0.9,"probabilities":{"b1":0.05,"b2":0.93,"none":0.02}}}}"#.utf8))
+        XCTAssertEqual(r.choice, "b2")
+        XCTAssertEqual(r.probabilities["b2"], 0.93)
+    }
+
+    func testFlipDirectionWords() {
+        XCTAssertTrue(ImageNav.means(.next, text: "", classes: "arrow-controller right"))
+        XCTAssertTrue(ImageNav.means(.prev, text: "", classes: "arrow-controller left"))
+        XCTAssertFalse(ImageNav.means(.prev, text: "", classes: "arrow-controller right"))
+        XCTAssertTrue(ImageNav.means(.next, text: "下一张", classes: ""))
+        XCTAssertTrue(ImageNav.means(.next, text: "", classes: "swiper-button-next"))
+        XCTAssertFalse(ImageNav.means(.next, text: "", classes: "swiper-button-prev"))
+        XCTAssertFalse(ImageNav.means(.next, text: "", classes: "float-right"), "只有 right 没有导航类词，不算")
+    }
+
     func testDirection() {
         XCTAssertEqual(Geometry.direction(dx: 10, dy: 0), "right")
         XCTAssertEqual(Geometry.direction(dx: 0, dy: 10), "down")      // AX 坐标 y 向下

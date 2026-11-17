@@ -9,8 +9,17 @@ final class OverlayController {
         var strong: Bool
     }
 
+    /// B2 目标模式给卡片的标注：相关的绿框，无关 / 推广的压暗，还在等 Jev 的虚线
+    struct CardMark {
+        enum Style { case pending, exact, relevant, loose, dim }
+        var rect: CGRect
+        var style: Style
+        var text: String
+    }
+
     var highlight: Box?
     var others: [Box] = []
+    var cards: [CardMark] = []
     var circlePath: [CGPoint] = []
     var hint: String?
 
@@ -44,6 +53,31 @@ final class OverlayController {
     }
 
     func refresh() { windows.forEach { $0.contentView?.needsDisplay = true } }
+
+    private var toastToken = 0
+    /// 屏幕上方短暂显示一句结果
+    func toast(_ text: String, seconds: Double = 1.8) {
+        toastToken += 1
+        let token = toastToken
+        hint = text
+        refresh()
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [weak self] in
+            guard let self, self.toastToken == token else { return }
+            self.hint = nil
+            self.refresh()
+        }
+    }
+
+    /// 短暂框出一个元素（看清楚 App 找到的是哪个按钮）
+    func flash(_ rect: CGRect, text: String, seconds: Double = 1.5) {
+        highlight = .init(rect: rect, text: text, strong: true)
+        refresh()
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [weak self] in
+            guard let self, self.highlight?.rect == rect else { return }
+            self.highlight = nil
+            self.refresh()
+        }
+    }
 
     func clearPrediction() {
         guard highlight != nil || !others.isEmpty else { return }
@@ -83,6 +117,34 @@ final class OverlayView: NSView {
         guard let c = controller else { return }
         NSColor.clear.setFill()
         dirtyRect.fill(using: .copy)
+
+        for m in c.cards {
+            let r = toView(m.rect)
+            guard r.intersects(bounds) else { continue }
+            let p = NSBezierPath(roundedRect: r.insetBy(dx: 1, dy: 1), xRadius: 8, yRadius: 8)
+            switch m.style {
+            case .dim:
+                NSColor.black.withAlphaComponent(0.42).setFill()
+                p.fill()
+                pill(m.text, at: NSPoint(x: r.minX + 6, y: r.maxY - 24), color: NSColor.darkGray.withAlphaComponent(0.85), font: .systemFont(ofSize: 11))
+            case .loose:
+                NSColor.black.withAlphaComponent(0.18).setFill()
+                p.fill()
+            case .relevant, .exact:
+                let green = NSColor.systemGreen
+                green.withAlphaComponent(m.style == .exact ? 0.16 : 0.07).setFill()
+                p.fill()
+                green.setStroke()
+                p.lineWidth = m.style == .exact ? 4 : 2.5
+                p.stroke()
+                pill(m.text, at: NSPoint(x: r.minX + 6, y: r.maxY - 24), color: green.withAlphaComponent(0.92), font: .boldSystemFont(ofSize: 11))
+            case .pending:
+                NSColor.systemGray.withAlphaComponent(0.7).setStroke()
+                p.lineWidth = 1.5
+                p.setLineDash([5, 4], count: 2, phase: 0)
+                p.stroke()
+            }
+        }
 
         for o in c.others {
             let r = toView(o.rect)

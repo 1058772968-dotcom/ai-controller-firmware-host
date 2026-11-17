@@ -17,6 +17,31 @@ public struct InspirationItem: Codable, Identifiable, Equatable {
     public var rect: [Double]?
     public var imageFile: String?
 
+    // K2 整理（都是可选字段：旧版本存的 item.json 没有这些键，照样能读）
+    /// 标签：用户写的（意图里的 #标签、编辑框）加上 Jev 判断适用的
+    public var tags: [String]?
+    /// tags 里哪些是自动加的（界面上标“自动”，用户可以删）
+    public var autoTags: [String]?
+    /// 归属项目（项目名，来自灵感库的项目列表）
+    public var project: String?
+    /// user / jev / mock
+    public var projectSource: String?
+    /// 可能和哪一条是同一个灵感（J7 判断，等用户合并或否认）
+    public var duplicateOf: String?
+    public var duplicateProbability: Double?
+    /// 用户点过“不是重复”
+    public var duplicateDismissed: Bool?
+    /// 上次自动整理（类别、项目、标签、去重）的时间
+    public var organizedAt: Date?
+    public var updatedAt: Date?
+
+    // K5 回流
+    /// 复制、拖出、打包给 agent 的次数
+    public var useCount: Int?
+    public var lastUsedAt: Date?
+    /// 归档：不删，默认不显示
+    public var archived: Bool?
+
     public init(intent: String, context: ScreenContext, texts: [String], rect: CGRect?) {
         id = UUID().uuidString
         createdAt = Date()
@@ -29,16 +54,33 @@ public struct InspirationItem: Codable, Identifiable, Equatable {
         if let r = rect { self.rect = [Double(r.minX), Double(r.minY), Double(r.width), Double(r.height)] }
     }
 
+    public var tagList: [String] { tags ?? [] }
+    public var isArchived: Bool { archived ?? false }
+    public var uses: Int { useCount ?? 0 }
+    /// 等用户处理的“可能重复”
+    public var pendingDuplicate: String? { duplicateDismissed == true ? nil : duplicateOf }
+
     /// 丢给 agent 时用的文字
     public func promptText(imagePath: String?) -> String {
         var lines = ["【灵感】\(intent.isEmpty ? "（未写意图）" : intent)"]
-        if let c = category { lines.append("类别：\(CategoryQuestion.displayName(c))") }
+        lines.append(contentsOf: detailLines(imagePath: imagePath))
+        return lines.joined(separator: "\n")
+    }
+
+    /// 意图以外的几行：类别、项目、标签、来源、链接、圈内文字、截图
+    public func detailLines(imagePath: String?) -> [String] {
+        var lines: [String] = []
+        var meta: [String] = []
+        if let c = category { meta.append("类别：\(CategoryQuestion.displayName(c))") }
+        if let p = project { meta.append("项目：\(p)") }
+        if !tagList.isEmpty { meta.append("标签：\(tagList.joined(separator: "、"))") }
+        if !meta.isEmpty { lines.append(meta.joined(separator: "　")) }
         let src = [appName, windowTitle].compactMap { $0 }.joined(separator: " · ")
         if !src.isEmpty { lines.append("来源：\(src)") }
         if let u = url { lines.append("链接：\(u)") }
         if !texts.isEmpty { lines.append("圈内文字：\(texts.prefix(6).joined(separator: " / "))") }
         if let p = imagePath { lines.append("截图：\(p)") }
-        return lines.joined(separator: "\n")
+        return lines
     }
 }
 
@@ -69,9 +111,78 @@ public final class LibraryStore {
     public func all() -> [InspirationItem] {
         let dirs = (try? FileManager.default.contentsOfDirectory(at: root, includingPropertiesForKeys: nil)) ?? []
         return dirs.compactMap { d in
+            if d.lastPathComponent.hasPrefix("_") || d.lastPathComponent.hasPrefix(".") { return nil }   // _meta 等不是条目
             guard let data = try? Data(contentsOf: d.appendingPathComponent("item.json")) else { return nil }
             return try? dec.decode(InspirationItem.self, from: data)
         }.sorted { $0.createdAt > $1.createdAt }
+    }
+
+    public func item(id: String) -> InspirationItem? {
+        guard let data = try? Data(contentsOf: root.appendingPathComponent(id, isDirectory: true).appendingPathComponent("item.json")) else { return nil }
+        return try? dec.decode(InspirationItem.self, from: data)
+    }
+
+    // MARK: 项目列表（K2 归属项目从这里选）：<root>/_meta/projects.json
+
+    private var metaDir: URL { root.appendingPathComponent("_meta", isDirectory: true) }
+
+    public func projects() -> [String] {
+        guard let d = try? Data(contentsOf: metaDir.appendingPathComponent("projects.json")),
+              let list = try? JSONDecoder().decode([String].self, from: d) else { return [] }
+        return list
+    }
+
+    public func saveProjects(_ list: [String]) throws {
+        var seen = Set<String>()
+        let clean = list.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty && seen.insert($0).inserted }
+        try FileManager.default.createDirectory(at: metaDir, withIntermediateDirectories: true)
+        try enc.encode(clean).write(to: metaDir.appendingPathComponent("projects.json"))
+    }
+
+    // MARK: K5 回流
+
+    /// 复制、拖出、打包时记一次“用过”
+    public func markUsed(_ ids: [String], at date: Date = Date()) {
+        for id in ids {
+            guard var it = item(id: id) else { continue }
+            it.useCount = it.uses + 1
+            it.lastUsedAt = date
+            try? update(it)
+        }
+    }
+
+    // MARK: K2 去重：把重复条目并进原条目，重复条目移到废纸篓
+
+    @discardableResult
+    public func merge(duplicate dupId: String, into originalId: String) throws -> InspirationItem {
+        guard var orig = item(id: originalId), let dup = item(id: dupId) else {
+            throw NSError(domain: "AIKeyInspire", code: 1, userInfo: [NSLocalizedDescriptionKey: "找不到要合并的条目"])
+        }
+        let d = dup.intent.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !d.isEmpty && !orig.intent.contains(d) { orig.intent = orig.intent.isEmpty ? d : orig.intent + "；" + d }
+        var tags = orig.tagList
+        for t in dup.tagList where !tags.contains(t) { tags.append(t) }
+        orig.tags = tags.isEmpty ? nil : tags
+        orig.autoTags = orig.autoTags?.filter { tags.contains($0) }
+        for t in dup.texts where !orig.texts.contains(t) && orig.texts.count < 16 { orig.texts.append(t) }
+        if orig.project == nil { orig.project = dup.project; orig.projectSource = dup.projectSource }
+        if orig.url == nil { orig.url = dup.url }
+        orig.useCount = orig.uses + dup.uses == 0 ? nil : orig.uses + dup.uses
+        // 原条目没有截图、重复的有：把截图挪过来
+        if orig.imageFile == nil, let src = imageURL(dup) {
+            let dst = root.appendingPathComponent(orig.id, isDirectory: true).appendingPathComponent("shot.png")
+            try? FileManager.default.copyItem(at: src, to: dst)
+            orig.imageFile = "shot.png"
+        }
+        orig.updatedAt = Date()
+        try update(orig)
+        try delete(id: dupId)
+        // 其他指向被删条目的“可能重复”改指原条目
+        for var other in all() where other.duplicateOf == dupId {
+            other.duplicateOf = other.id == orig.id ? nil : orig.id
+            try? update(other)
+        }
+        return orig
     }
 
     @discardableResult

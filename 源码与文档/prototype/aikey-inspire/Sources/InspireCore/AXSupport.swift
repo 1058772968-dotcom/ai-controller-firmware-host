@@ -63,6 +63,15 @@ public enum AX {
         return AXUIElementCopyElementAtPosition(system, Float(p.x), Float(p.y), &el) == .success ? el : nil
     }
 
+    /// 命中测试偶尔会因为目标软件响应慢而返回空：一次性动作用这个，失败再试两次
+    public static func hitPatient(_ system: AXUIElement, _ p: CGPoint, tries: Int = 3) -> AXUIElement? {
+        for i in 0..<tries {
+            if let e = hit(system, p) { return e }
+            if i < tries - 1 { usleep(40_000) }
+        }
+        return nil
+    }
+
     public static var trusted: Bool { AXIsProcessTrusted() }
 
     /// 弹系统授权框（只会在未授权时弹）

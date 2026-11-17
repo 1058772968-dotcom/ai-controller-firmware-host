@@ -9,6 +9,9 @@ cd "$(dirname "$0")"
 SCRATCH="$HOME/.cache/ai-key-inspire/build"     # 中间文件不进 iCloud
 APP="$HOME/Applications/AI KEY 灵感圈.app"
 
+# 测试页复制到 iCloud 之外：预览服务进程读不了 iCloud 目录（.claude/launch.json 的 inspire-fixture）
+mkdir -p "$HOME/.cache/ai-key-inspire/fixtures" && cp Tests/fixtures/*.html "$HOME/.cache/ai-key-inspire/fixtures/"
+
 if [ "${1:-}" = "test" ]; then
   exec swift test --scratch-path "$SCRATCH"
 fi

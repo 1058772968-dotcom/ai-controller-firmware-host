@@ -1,0 +1,35 @@
+# 灵感圈 swift test（2026-11-17 10:37:40 +0800，源码 = 键盘仓库分支 claude/host-app-dev-refine-9d6a02 @ 8eea31d）
+Test Case '-[InspireCoreTests.CoreTests testActionAlreadyDone]' passed (0.024 seconds).
+Test Case '-[InspireCoreTests.CoreTests testActionLabelMatching]' passed (0.001 seconds).
+Test Case '-[InspireCoreTests.CoreTests testActionQuestionAndMock]' passed (0.001 seconds).
+Test Case '-[InspireCoreTests.CoreTests testCategoryRequestAndMock]' passed (0.001 seconds).
+Test Case '-[InspireCoreTests.CoreTests testCleanStripsInvisibleFormatChars]' passed (0.001 seconds).
+Test Case '-[InspireCoreTests.CoreTests testDirection]' passed (0.001 seconds).
+Test Case '-[InspireCoreTests.CoreTests testDwellFiresOncePerStop]' passed (0.002 seconds).
+Test Case '-[InspireCoreTests.CoreTests testFlipDirectionWords]' passed (0.000 seconds).
+Test Case '-[InspireCoreTests.CoreTests testLibraryRoundTripAndTrash]' passed (0.012 seconds).
+Test Case '-[InspireCoreTests.CoreTests testMockPrefersUnderPointer]' passed (0.001 seconds).
+Test Case '-[InspireCoreTests.CoreTests testParseResponse]' passed (0.001 seconds).
+Test Case '-[InspireCoreTests.CoreTests testRequestBodyShape]' passed (0.093 seconds).
+Test Case '-[InspireCoreTests.CoreTests testSearchPlanDestinations]' passed (0.017 seconds).
+Test Case '-[InspireCoreTests.CoreTests testSearchURLEncoding]' passed (0.002 seconds).
+	 Executed 14 tests, with 0 failures (0 unexpected) in 0.157 (0.162) seconds
+Test Case '-[InspireCoreTests.OrganizeBrowseTests testCardFinderArticlesAndResults]' passed (0.061 seconds).
+Test Case '-[InspireCoreTests.OrganizeBrowseTests testCardFinderFeed]' passed (0.002 seconds).
+Test Case '-[InspireCoreTests.OrganizeBrowseTests testCardQuestionsAndNext]' passed (0.003 seconds).
+Test Case '-[InspireCoreTests.OrganizeBrowseTests testCloseKindWords]' passed (0.006 seconds).
+Test Case '-[InspireCoreTests.OrganizeBrowseTests testHashtagsExtract]' passed (0.044 seconds).
+Test Case '-[InspireCoreTests.OrganizeBrowseTests testLibraryQuery]' passed (0.005 seconds).
+Test Case '-[InspireCoreTests.OrganizeBrowseTests testOldItemJSONStillDecodes]' passed (0.001 seconds).
+Test Case '-[InspireCoreTests.OrganizeBrowseTests testOrganizeMock]' passed (0.006 seconds).
+Test Case '-[InspireCoreTests.OrganizeBrowseTests testOrganizeRequestParseAndApply]' passed (0.023 seconds).
+Test Case '-[InspireCoreTests.OrganizeBrowseTests testPackGroupsByCategory]' passed (0.086 seconds).
+Test Case '-[InspireCoreTests.OrganizeBrowseTests testPopupFinder]' passed (0.005 seconds).
+Test Case '-[InspireCoreTests.OrganizeBrowseTests testProjectsMergeAndUsage]' passed (0.027 seconds).
+Test Case '-[InspireCoreTests.OrganizeBrowseTests testRecallRequestParseMock]' passed (0.001 seconds).
+Test Case '-[InspireCoreTests.OrganizeBrowseTests testSimilarityPrefersSameNote]' passed (0.004 seconds).
+Test Case '-[InspireCoreTests.OrganizeBrowseTests testSourceLinkTextFragment]' passed (0.001 seconds).
+Test Case '-[InspireCoreTests.OrganizeBrowseTests testVocabularyMostUsedFirst]' passed (0.002 seconds).
+	 Executed 16 tests, with 0 failures (0 unexpected) in 0.276 (0.376) seconds
+	 Executed 30 tests, with 0 failures (0 unexpected) in 0.432 (0.539) seconds
+	 Executed 30 tests, with 0 failures (0 unexpected) in 0.432 (0.547) seconds

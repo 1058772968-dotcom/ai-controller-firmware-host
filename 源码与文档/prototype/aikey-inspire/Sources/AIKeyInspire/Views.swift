@@ -59,6 +59,20 @@ struct SettingsView: View {
                     hk("⌃⌥C", "开始 / 完成圈选（圈选中 Esc 取消）")
                     hk("⌃⌥L", "打开灵感库")
                     hk("⌃⌥D", "调试面板")
+                    Divider()
+                    hk("⌃⌥S", "快速搜索：可先点名 小红书 / b站 / 推特 / 知乎 / 谷歌 / 页内 / 灵感库")
+                    hk("⌃⌥← →", "图片上一张 / 下一张；按住不放连续翻")
+                    hk("⌃⌥1", "点赞（指针所在内容）")
+                    hk("⌃⌥2", "收藏")
+                    hk("⌃⌥3", "投币（先确认）")
+                    hk("⌃⌥4", "关注（先确认）")
+                    hk("⌃⌥Z", "撤销 5 秒内的点赞 / 收藏")
+                    Divider()
+                    hk("⌃⌥G", "目标模式开 / 关：给屏上卡片标相关度，无关和推广压暗")
+                    hk("⌃⌥N", "跳到下一条相关的（这一屏没有就往下翻）")
+                    hk("⌃⌥X", "关闭弹窗（关闭、×、暂不登录）")
+                    hk("⌃⌥K", "把灵感库里勾选的几条打包复制给 agent")
+                    Toggle("快速搜索后自动打开目标模式（搜索词当目标）", isOn: $state.autoTargetAfterSearch).font(.callout)
                 }.padding(6)
             }
         }
@@ -67,7 +81,7 @@ struct SettingsView: View {
     }
 
     private func hk(_ k: String, _ d: String) -> some View {
-        HStack { Text(k).font(.system(.body, design: .monospaced)).frame(width: 60, alignment: .leading); Text(d) }
+        HStack { Text(k).font(.system(.body, design: .monospaced)).frame(width: 76, alignment: .leading); Text(d) }
     }
 
     private func permRow(_ name: String, ok: Bool, why: String, request: @escaping () -> Void, pane: String) -> some View {
@@ -139,6 +153,12 @@ struct DebugView: View {
                     }
                     Text(state.contextText).font(.caption).lineLimit(2)
                     Text("指针：\(state.motionText)").font(.caption).foregroundStyle(.secondary)
+                    if !state.lastQuickAction.isEmpty {
+                        Text("快捷功能：\(state.lastQuickAction)").font(.caption).foregroundStyle(.blue).lineLimit(2)
+                    }
+                    if state.targetModeOn {
+                        Text("目标模式：\(state.userGoal) · \(state.targetStatus)").font(.caption).foregroundStyle(.green).lineLimit(2)
+                    }
                     if let e = state.lastError { Text(e).font(.caption).foregroundStyle(.red).lineLimit(3) }
                     HStack {
                         Text("预判：\(predictedText)")
@@ -190,11 +210,18 @@ struct DebugView: View {
 
 // MARK: - 意图面板
 
+/// 存进灵感库时选的项目：自动 = 让 Jev 判断
+enum ProjectChoice: Hashable {
+    case auto, none, named(String)
+}
+
 struct IntentView: View {
     let draft: CircleController.Draft
-    var onSave: (String) -> Void
+    let projects: [String]
+    var onSave: (String, ProjectChoice) -> Void
     var onCancel: () -> Void
     @State private var intent = ""
+    @State private var project: ProjectChoice = .auto
     @FocusState private var focused: Bool
 
     var body: some View {
@@ -209,16 +236,24 @@ struct IntentView: View {
             if !draft.texts.isEmpty {
                 Text("圈内文字：" + draft.texts.prefix(5).joined(separator: " / ")).font(.caption).foregroundStyle(.secondary).lineLimit(2)
             }
-            TextField("说明意图，比如：这个配色想用在灵感卡片上", text: $intent, axis: .vertical)
+            TextField("说明意图，比如：这个配色想用在灵感卡片上 #奶油风", text: $intent, axis: .vertical)
                 .lineLimit(2...5)
                 .textFieldStyle(.roundedBorder)
                 .focused($focused)
-                .onSubmit { onSave(intent) }
+                .onSubmit { onSave(intent, project) }
+            if !projects.isEmpty {
+                Picker("项目", selection: $project) {
+                    Text("自动判断").tag(ProjectChoice.auto)
+                    Text("不归属").tag(ProjectChoice.none)
+                    ForEach(projects, id: \.self) { p in Text(p).tag(ProjectChoice.named(p)) }
+                }
+                .frame(maxWidth: 320)
+            }
             HStack {
-                Text("↩ 保存").font(.caption).foregroundStyle(.secondary)
+                Text("↩ 保存 · 写 #标签 会变成标签 · 保存后自动判断类别、项目、标签和是否重复").font(.caption).foregroundStyle(.secondary)
                 Spacer()
                 Button("取消", action: onCancel).keyboardShortcut(.cancelAction)
-                Button("存进灵感库") { onSave(intent) }.keyboardShortcut(.defaultAction)
+                Button("存进灵感库") { onSave(intent, project) }.keyboardShortcut(.defaultAction)
             }
         }
         .padding(16)
@@ -227,97 +262,81 @@ struct IntentView: View {
     }
 }
 
-// MARK: - 灵感库
+// 灵感库窗口在 LibraryViews.swift
 
-struct LibraryView: View {
-    @ObservedObject var state: AppState
-    private let cols = [GridItem(.adaptive(minimum: 230), spacing: 12)]
+
+// MARK: - F1 快速搜索框
+
+struct SearchView: View {
+    let currentURL: String?
+    var onSubmit: (SearchPlan) -> Void
+    var onCancel: () -> Void
+    @State private var input: String
+    @State private var submitted = false
+    @FocusState private var focused: Bool
+
+    init(initial: String, currentURL: String?, onSubmit: @escaping (SearchPlan) -> Void, onCancel: @escaping () -> Void) {
+        _input = State(initialValue: initial)
+        self.currentURL = currentURL
+        self.onSubmit = onSubmit
+        self.onCancel = onCancel
+    }
+
+    private var plan: SearchPlan { QuickSearch.plan(input: input, currentURL: currentURL) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("灵感库（\(state.library.count)）").font(.title3.bold())
-                Spacer()
-                Text("把卡片拖进 agent 的对话框；或点“复制”后粘贴").font(.caption).foregroundStyle(.secondary)
-                Button("打开文件夹") { NSWorkspace.shared.open(state.store.root) }
+            TextField("搜什么？可以先点名：小红书 / b站 / 推特 / 知乎 / 谷歌 / 页内 / 灵感库", text: $input)
+                .textFieldStyle(.roundedBorder)
+                .font(.title3)
+                .focused($focused)
+                .onSubmit { submit() }
+            HStack(spacing: 4) {
+                Text("去向：\(plan.destination.name)").bold()
+                Text("（\(plan.reason)）").foregroundStyle(.secondary)
             }
-            if state.library.isEmpty {
+            if !plan.query.isEmpty { Text("搜索词：\(plan.query)") }
+            if let u = plan.url { Text(u.absoluteString).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
+            HStack {
+                Text("↩ 搜索 · esc 取消 · 选中的文字会自动填进来").font(.caption).foregroundStyle(.secondary)
                 Spacer()
-                Text("还没有灵感。按 ⌃⌥C 开始圈选，移动光标圈住喜欢的内容，再按 ⌃⌥C。").foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-                Spacer()
-            } else {
-                ScrollView {
-                    LazyVGrid(columns: cols, spacing: 12) {
-                        ForEach(state.library) { item in card(item) }
-                    }.padding(2)
-                }
+                Button("取消", action: onCancel).keyboardShortcut(.cancelAction)
+                Button("搜索") { submit() }.disabled(plan.query.trimmingCharacters(in: .whitespaces).isEmpty)
             }
         }
         .padding(14)
-        .frame(minWidth: 760, minHeight: 520)
+        .frame(width: 600)
+        .onAppear { focused = true }
     }
 
-    private func card(_ item: InspirationItem) -> some View {
-        let url = state.store.imageURL(item)
-        return VStack(alignment: .leading, spacing: 6) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 6).fill(Color.gray.opacity(0.12))
-                if let url, let img = NSImage(contentsOf: url) {
-                    Image(nsImage: img).resizable().scaledToFit().clipShape(RoundedRectangle(cornerRadius: 6))
-                } else {
-                    Text("无截图").font(.caption).foregroundStyle(.secondary)
-                }
-            }.frame(height: 140)
-            Text(item.intent.isEmpty ? "（未写意图）" : item.intent).font(.callout.bold()).lineLimit(2)
-            HStack(spacing: 6) {
-                if let c = item.category {
-                    Text(CategoryQuestion.displayName(c) + (item.categorySource == "jev" ? "" : "·模拟"))
-                        .font(.caption2).padding(.horizontal, 6).padding(.vertical, 2)
-                        .background(Capsule().fill(Color.accentColor.opacity(0.18)))
-                }
-                Text([item.appName, item.windowTitle].compactMap { $0 }.joined(separator: " · "))
-                    .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
-            }
+    private func submit() {
+        guard !submitted else { return }
+        guard !plan.query.trimmingCharacters(in: .whitespaces).isEmpty else { NSSound.beep(); return }
+        submitted = true
+        onSubmit(plan)
+    }
+}
+
+// MARK: - 投币 / 关注前的确认
+
+struct ConfirmView: View {
+    let text: String
+    var onConfirm: () -> Void
+    var onCancel: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("确认一下").font(.headline)
+            Text(text).fixedSize(horizontal: false, vertical: true)
+            Text("这类操作撤不回或会公开，按 ↩ 确认，esc 取消。投币时网站自己还会再弹一次选币数。")
+                .font(.caption).foregroundStyle(.secondary)
             HStack {
-                Button("复制") { copy(item) }
-                if let u = item.url, let link = URL(string: u) { Button("打开来源") { NSWorkspace.shared.open(link) } }
                 Spacer()
-                Button(role: .destructive) { delete(item) } label: { Image(systemName: "trash") }
-            }.font(.caption)
-        }
-        .padding(8)
-        .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.25)))
-        .onDrag { provider(item) }
-    }
-
-    /// 拖出去：图片文件 + 一段说明文字（接收方取它能用的那种）
-    private func provider(_ item: InspirationItem) -> NSItemProvider {
-        let url = state.store.imageURL(item)
-        let p = NSItemProvider()
-        if let url {
-            p.registerFileRepresentation(forTypeIdentifier: UTType.png.identifier, fileOptions: [], visibility: .all) { done in
-                done(url, false, nil)
-                return nil
+                Button("取消", action: onCancel).keyboardShortcut(.cancelAction)
+                Button("确认", action: onConfirm).keyboardShortcut(.defaultAction)
             }
-            p.suggestedName = "灵感-\(item.intent.prefix(12))"
         }
-        p.registerObject(item.promptText(imagePath: url?.path) as NSString, visibility: .all)
-        return p
-    }
-
-    private func copy(_ item: InspirationItem) {
-        let url = state.store.imageURL(item)
-        let pb = NSPasteboard.general
-        pb.clearContents()
-        var objs: [NSPasteboardWriting] = []
-        if let url, let img = NSImage(contentsOf: url) { objs.append(img) }
-        objs.append(item.promptText(imagePath: url?.path) as NSString)
-        pb.writeObjects(objs)
-    }
-
-    private func delete(_ item: InspirationItem) {
-        try? state.store.delete(id: item.id)
-        state.reloadLibrary()
+        .padding(16)
+        .frame(width: 420)
     }
 }

@@ -1,0 +1,43 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>测试笔记页 · 灵感圈</title>
+<style>
+body{font-family:-apple-system;margin:0;background:#fafafa;color:#222}
+.note{display:flex;gap:24px;padding:24px}
+.media{position:relative;width:520px;height:520px;background:#ddd;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:48px}
+.arrow-controller{position:absolute;top:240px;width:40px;height:40px;border-radius:20px;background:#fff8;border:0;cursor:pointer}
+.arrow-controller.left{left:12px}.arrow-controller.right{right:12px}
+.side{width:420px}
+.interact{display:flex;gap:18px;margin:16px 0}
+.interact span,.interact button{padding:6px 10px;border-radius:8px;background:#eee;border:0;cursor:pointer}
+.comments{margin-top:24px;border-top:1px solid #ddd;padding-top:12px}
+.comment{display:flex;justify-content:space-between;margin:10px 0}
+#log{font-size:12px;color:#666}
+</style></head><body>
+<div class="note">
+  <div class="media" id="media">
+    <button class="arrow-controller left" onclick="go(-1)"></button>
+    <span id="img">图 1 / 4</span>
+    <button class="arrow-controller right" onclick="go(1)"></button>
+  </div>
+  <div class="side">
+    <div class="author"><b>设计师小林</b> <button class="follow-button" onclick="log('关注')">关注</button></div>
+    <h2>奶油风客厅配色参考</h2>
+    <p>米白 + 燕麦 + 原木，三种颜色就够了。</p>
+    <div class="interact">
+      <span class="like-wrapper" role="button" tabindex="0" onclick="toggle(this,'like-active')">1.2万</span>
+      <span class="collect-wrapper" role="button" tabindex="0" onclick="toggle(this,'collect-active')">3456</span>
+      <button class="video-coin" onclick="log('投币')">投币</button>
+      <span class="chat-wrapper" role="button" tabindex="0">218</span>
+    </div>
+    <div class="comments" aria-label="评论区">
+      <div class="comment"><span>好好看！求色号</span><span class="like-wrapper comment-like" role="button" tabindex="0" onclick="toggle(this,'like-active')">赞 32</span></div>
+      <div class="comment"><span>已收藏</span><span class="like-wrapper comment-like" role="button" tabindex="0" onclick="toggle(this,'like-active')">赞 5</span></div>
+    </div>
+    <div id="log"></div>
+  </div>
+</div>
+<script>
+let i=1;function go(d){i=Math.min(4,Math.max(1,i+d));document.getElementById('img').textContent='图 '+i+' / 4';log('翻到 '+i)}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1)});
+function toggle(el,c){el.classList.toggle(c);log(el.classList.contains(c)?'已切换为激活':'已取消激活')}
+function log(t){document.getElementById('log').textContent=t}
+</script></body></html>
